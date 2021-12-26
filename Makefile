@@ -77,6 +77,10 @@ KOBJS			=	entry.o 						\
 					main.o 							\
 					printf.o 						\
 					console.o						\
+					pmm.o  							\
+					strings.o 						\
+					panic.o  						\
+					lock.o 							\
 
 # ------------------------------------------------------------------------------
 # Rules
@@ -100,7 +104,9 @@ oskernel: $(OUTDIR) $(KOBJS) $(LDSCRIPT)
 debug: oskernel
 	@if [ ! -d "$(DEBUGDIR)" ]; then $(MKDIR) $(DEBUGDIR); fi
 	@$(ECHO) ">>>" objdump: $(notdir $(KERNEL)).asm
-	@$(OBJDUMP) --source $(KERNEL) > $(DEBUGDIR)/$(notdir $(KERNEL)).asm
+	@$(OBJDUMP) --source -D $(KERNEL) > $(DEBUGDIR)/$(notdir $(KERNEL)).asm
+	@$(ECHO) ">>>" readelf: $(notdir $(KERNEL)).sym
+	@$(READELF) -s $(KERNEL) > $(DEBUGDIR)/$(notdir $(KERNEL)).sym
 
 $(OUTDIR):
 	@$(MKDIR) -p $@ 

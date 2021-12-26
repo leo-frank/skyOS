@@ -1,5 +1,6 @@
 #include "logo.h"
-
+#include "pmm.h"
 void main() {
-    logo();
+  logo();
+  pmm_init();
 }
