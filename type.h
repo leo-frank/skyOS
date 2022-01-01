@@ -1,3 +1,5 @@
+#pragma once
+
 typedef unsigned uint;
 typedef unsigned long uint64;
 typedef __SIZE_TYPE__ size_t;
