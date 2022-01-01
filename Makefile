@@ -30,6 +30,7 @@ AR        = $(PATH_TOOLS_CC)ar
 AS        = $(PATH_TOOLS_CC)gcc
 CC        = $(PATH_TOOLS_CC)gcc
 NM        = $(PATH_TOOLS_CC)nm
+GDB	      = $(PATH_TOOLS_CC)gdb
 GCOV      = $(PATH_TOOLS_CC)gcov
 OBJDUMP   = $(PATH_TOOLS_CC)objdump
 OBJCOPY   = $(PATH_TOOLS_CC)objcopy
@@ -57,7 +58,7 @@ QEMUOPT += -kernel $(KERNEL)
 
 CFLAGS      	= 	-Wall                        	\
 					-Werror							\
-					-O								\
+					-O0								\
 					-fno-omit-frame-pointer			\
 					-ggdb							\
 					-g								\
@@ -77,16 +78,21 @@ KOBJS			=	entry.o 						\
 					main.o 							\
 					printf.o 						\
 					console.o						\
-					pmm.o  							\
 					strings.o 						\
 					panic.o  						\
 					lock.o 							\
+					buddy.o 						\
+					# pmm.o  							\
 
 # ------------------------------------------------------------------------------
 # Rules
 # ------------------------------------------------------------------------------
-run: oskernel debug
+run: oskernel binutils
 	@$(QEMU) $(QEMUOPT)
+
+debug: oskernel binutils
+	@$(QEMU) $(QEMUOPT) -S -gdb tcp::1235
+# @$(GDB) $(KERNEL) -q -x ./gdbinit
 
 oskernel: $(OUTDIR) $(KOBJS) $(LDSCRIPT)
 	@if [ ! -d "$(BUILD)" ]; then $(MKDIR) $(BUILD); fi
@@ -101,7 +107,7 @@ oskernel: $(OUTDIR) $(KOBJS) $(LDSCRIPT)
 	@$(ECHO) +++ compile: $<
 	@$(CC) $(CFLAGS) $< -o $(BUILD)/$(basename $<).o
 
-debug: oskernel
+binutils: oskernel
 	@if [ ! -d "$(DEBUGDIR)" ]; then $(MKDIR) $(DEBUGDIR); fi
 	@$(ECHO) ">>>" objdump: $(notdir $(KERNEL)).asm
 	@$(OBJDUMP) --source -D $(KERNEL) > $(DEBUGDIR)/$(notdir $(KERNEL)).asm

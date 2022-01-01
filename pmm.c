@@ -1,3 +1,6 @@
+// currently useless file.
+// this file is not compiled and linked into kernel
+
 #include "printf.h"
 #include "type.h"
 #include "strings.h"
@@ -8,10 +11,8 @@
 extern char kernel_start[];
 extern char kernel_end[]; // end of .bss
 extern char boot_stack_top[];
-char *pmm_start, *pmm_end;
-#define PGSIZE (1 << 12)
-#define mem_size = (1 << 26); 
-#define npage (1 << 26) / PGSIZE // # of avliable page
+char *pmm_start, *pmm_end;  // free memory region
+
 
 /* Flags describing the status of a page frame */
 #define PG_reserved  0       // the page descriptor is reserved for kernel or unusable
