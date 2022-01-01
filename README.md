@@ -5,9 +5,10 @@
 2021.12.25: I am starting to develop my own operating system in C/C++, "skyOS", let's go !
 
 2021.12.25: Boot skyOS successfully and print logo!
+
 ## todo list
 
-- [ ] buddy memory allocator
+- [x] buddy memory allocator
 
 - [ ] SMP support
 
