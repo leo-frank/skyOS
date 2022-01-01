@@ -81,8 +81,8 @@ KOBJS			=	entry.o 						\
 					strings.o 						\
 					panic.o  						\
 					lock.o 							\
+					pmm.o  							\
 					buddy.o 						\
-					# pmm.o  							\
 
 # ------------------------------------------------------------------------------
 # Rules

@@ -6,7 +6,8 @@
 #include "buddy.h"
 #include "strings.h"
 
-/* Buddy allocater:
+/* 
+ * Buddy allocater: FIXME: bug may happen in multi-thread execution.
  * Order grows from 0 to BUDDY_MAX_ORDER - 1;
  * The smallest allocate size is BUDDY_PAGE_SIZE; so if you want to allocate
  * size that smaller than BUDDY_PAGE_SIZE, there will be internal fragments.
@@ -34,7 +35,7 @@ struct free_list {
     uint64 nr;                      // # of linked struct Page
 };
 
-struct Page pages[npage];
+extern struct Page pages[npage];    // define in pmm.c
 struct free_list buddy_lists[BUDDY_MAX_ORDER];
 
 // convert list entry to page
