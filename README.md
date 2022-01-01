@@ -6,6 +6,8 @@
 
 2021.12.25: Boot skyOS successfully and print logo!
 
+2022.01.01: Happy new year! Implement buddy allocator.
+
 ## todo list
 
 - [x] buddy memory allocator
