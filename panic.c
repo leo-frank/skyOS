@@ -1,5 +1,6 @@
 #include "printf.h"
 void panic(char *s) {
-    printf(s);
-    while(1);
+  printf(s);
+  while (1)
+    ;
 }

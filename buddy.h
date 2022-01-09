@@ -1,17 +1,17 @@
 #pragma once
 
-#include "type.h"
 #include "list.h"
+#include "type.h"
 
 #define PG_HEAD 1
 #define PG_TAIL 2
 
 struct Page {
-    uint order;                     // one page
-    uint free;                      // allocated or free
-    uint flag;                      // PG_HEAD, PG_TAIL
-    struct list_head list_link;     // belong to specfic free_list, 
-                                    // also linked with other struct Page
+  uint order;                  // one page
+  uint free;                   // allocated or free
+  uint flag;                   // PG_HEAD, PG_TAIL
+  struct list_head list_link;  // belong to specfic free_list,
+                               // also linked with other struct Page
 };
 
 void buddy_init();
