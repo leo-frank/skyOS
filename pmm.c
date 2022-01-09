@@ -1,8 +1,8 @@
 #include "pmm.h"
 
 #include "lock.h"
+#include "log.h"
 #include "panic.h"
-#include "printf.h"
 #include "strings.h"
 #include "type.h"
 
@@ -16,8 +16,8 @@ struct Page pages[npage];
 void pmm_init() {
   pmm_start = kernel_end;
   pmm_end = pmm_start + mem_size;
-  printf("kernel mem: [0x%x, 0x%x]\n", kernel_start, kernel_end);
-  printf("avliable mem: [0x%x, 0x%x]\n", pmm_start, pmm_end);
+  log_info("kernel mem: [0x%x, 0x%x]", kernel_start, kernel_end);
+  log_info("avliable mem: [0x%x, 0x%x]", pmm_start, pmm_end);
 
   buddy_init();
 }

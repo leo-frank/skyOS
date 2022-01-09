@@ -1,6 +1,7 @@
-#include "printf.h"
+#include "log.h"
 void logo() {
-  printf(
+  log_info(
+      "\n"
       "     _             ___  ____    _ \n"
       " ___| | ___   _   / _ \\/ ___|  | |\n"
       "/ __| |/ / | | | | | | \\___ \\  | |\n"

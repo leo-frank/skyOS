@@ -6,9 +6,9 @@
 
 #include "simple_allocator.h"
 
+#include "log.h"
 #include "panic.h"
 #include "pmm.h"
-#include "printf.h"
 #include "strings.h"
 
 struct spinlock pages_lock;
@@ -44,22 +44,22 @@ void simple_free(struct Page *p) {
 }
 
 void simple_test() {
-  printf("\n");
-  printf("allocate pg0:\n");
+  log_debug("\n");
+  log_debug("allocate pg0:\n");
   struct Page *pg0 = simple_allocate();
-  printf("pg0 addr = %lx\n", PGADDR(pg0 - pages));
-  printf("pg0 index = %lx\n", pg0 - pages);
-  printf("pg0 attribute = %d\n", pages[pg0 - pages].allocated);
-  printf("\nallocate pg1:\n");
+  log_debug("pg0 addr = %lx\n", PGADDR(pg0 - pages));
+  log_debug("pg0 index = %lx\n", pg0 - pages);
+  log_debug("pg0 attribute = %d\n", pages[pg0 - pages].allocated);
+  log_debug("\nallocate pg1:\n");
   struct Page *pg1 = simple_allocate();
-  printf("pg1 addr = %lx\n", PGADDR(pg1 - pages));
-  printf("pg1 attribute = %d\n", pages[pg1 - pages].allocated);
+  log_debug("pg1 addr = %lx\n", PGADDR(pg1 - pages));
+  log_debug("pg1 attribute = %d\n", pages[pg1 - pages].allocated);
   simple_free(pg0);
-  printf("\nafter free pg0:\n");
-  printf("pg0 attribute = %d\n", pages[pg0 - pages].allocated);
-  printf("pg1 attribute = %d\n", pages[pg1 - pages].allocated);
+  log_debug("\nafter free pg0:\n");
+  log_debug("pg0 attribute = %d\n", pages[pg0 - pages].allocated);
+  log_debug("pg1 attribute = %d\n", pages[pg1 - pages].allocated);
   simple_free(pg1);
-  printf("\nafter free pg0:\n");
-  printf("pg0 attribute = %d\n", pages[pg0 - pages].allocated);
-  printf("pg1 attribute = %d\n", pages[pg1 - pages].allocated);
+  log_debug("\nafter free pg0:\n");
+  log_debug("pg0 attribute = %d\n", pages[pg0 - pages].allocated);
+  log_debug("pg1 attribute = %d\n", pages[pg1 - pages].allocated);
 }

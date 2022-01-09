@@ -32,6 +32,13 @@ static struct {
   bool quiet;
 } LOG_L;
 
+// TRACE: very specific debug info, rarely used.
+// DEBUG: infos for developers, not for user.
+// INFO: infos for users, often indicates events.
+// WARN: potential errors, doesn't affect system running, this can be used when
+// you want to notice others that here is an incomplete implementation.
+// ERROR: fatal mistakes, used in panic.
+
 static const char *level_strings[] = {"TRACE", "DEBUG", "INFO",
                                       "WARN",  "ERROR", "FATAL"};
 
@@ -48,6 +55,7 @@ static void stdout_callback(log_Event *ev) {
   printf("%s %-5s %s:%d: ", buf, level_strings[ev->level], ev->file, ev->line);
 #endif
   vprintf(ev->fmt, ev->ap);
+  // println
   printf("\n");
 }
 

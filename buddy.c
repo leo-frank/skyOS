@@ -1,9 +1,9 @@
 #include "buddy.h"
 
 #include "list.h"
+#include "log.h"
 #include "panic.h"
 #include "pmm.h"
-#include "printf.h"
 #include "strings.h"
 #include "type.h"
 
@@ -233,7 +233,7 @@ uint64 buddy_statistics() {
     csize = BUDDY_PAGE_SIZE * (1 << i);
     list = &buddy_lists[i];
     total_size += list->nr * csize;
-    printf("order: %d, size: 0x%lx, num: %d\n", i, csize, list->nr);
+    log_debug("order: %d, size: 0x%lx, num: %d\n", i, csize, list->nr);
   }
   return total_size;
 }
@@ -242,97 +242,97 @@ uint64 buddy_statistics() {
 // it's expected output is in buddy_test1_bench.txt
 void buddy_test1() {
   buddy_statistics();
-  printf("1\n");
+  log_debug("1\n");
   buddy_allocate(4097);
   buddy_statistics();
-  printf("2\n");
+  log_debug("2\n");
   buddy_allocate(1);
   buddy_statistics();
-  printf("3\n");
+  log_debug("3\n");
   buddy_allocate(4097);
   buddy_statistics();
-  printf("4\n");
+  log_debug("4\n");
   buddy_allocate(0x1000);
   buddy_statistics();
-  printf("5\n");
+  log_debug("5\n");
   // buddy_allocate(0x2000000);
   // buddy_statistics();
-  // printf("6\n");
+  // log_debug("6\n");
   buddy_allocate(0x1000000);
   buddy_statistics();
-  printf("7\n");
+  log_debug("7\n");
   buddy_allocate(0x400000);
   buddy_statistics();
-  printf("8\n");
+  log_debug("8\n");
   buddy_allocate(0x400000);
   buddy_statistics();
-  printf("9\n");
+  log_debug("9\n");
   buddy_allocate(0x400000);
   buddy_statistics();
-  printf("10\n");
+  log_debug("10\n");
   buddy_allocate(0x400000);
   buddy_statistics();
-  printf("11\n");
+  log_debug("11\n");
   buddy_allocate(0x400000);
   buddy_statistics();
-  printf("12\n");
+  log_debug("12\n");
   buddy_allocate(0x400000);
   buddy_statistics();
-  printf("13\n");
+  log_debug("13\n");
 }
 
 // testcase2 focus on buddy allocate and free
 // it's expected output is in buddy_test2_bench.txt
 void buddy_test2() {
   buddy_statistics();
-  printf("0\n");
+  log_debug("0\n");
   struct Page* p1 = buddy_allocate(0x1000);
   buddy_statistics();
-  printf("1\n");
+  log_debug("1\n");
   struct Page* p2 = buddy_allocate(0x1000);
   buddy_statistics();
-  printf("2\n");
+  log_debug("2\n");
   buddy_free_page(p2);
   buddy_statistics();
-  printf("3\n");
+  log_debug("3\n");
   buddy_free_page(p1);
   buddy_statistics();
-  printf("4\n");
+  log_debug("4\n");
   struct Page* p3 = buddy_allocate(0x1000);
   buddy_statistics();
-  printf("5\n");
+  log_debug("5\n");
   struct Page* p4 = buddy_allocate(0x1000);
   buddy_statistics();
-  printf("6\n");
+  log_debug("6\n");
   buddy_free_page(p4);
   buddy_statistics();
-  printf("7\n");
+  log_debug("7\n");
   buddy_free_page(p3);
   buddy_statistics();
-  printf("8\n");
+  log_debug("8\n");
   struct Page* p5 = buddy_allocate(0x8000);
   buddy_statistics();
-  printf("9\n");
+  log_debug("9\n");
   struct Page* p6 = buddy_allocate(0x8000);
   buddy_statistics();
-  printf("10\n");
+  log_debug("10\n");
   buddy_free_page(p6);  // here should be a merge !
   buddy_statistics();
-  printf("11\n");
+  log_debug("11\n");
   buddy_free_page(p5);
   buddy_statistics();
-  printf("12\n");
+  log_debug("12\n");
   struct Page* p7 = buddy_allocate(0x8000);
   buddy_statistics();
-  printf("13\n");
+  log_debug("13\n");
   struct Page* p8 = buddy_allocate(0x8000);
   buddy_statistics();
-  printf("14\n");
+  log_debug("14\n");
   // FIXME: this is a notable error case
   // see buddy.c get_buddy_page for detail
   buddy_free_page(p7);
   buddy_statistics();
-  printf("15\n");
+  log_debug("15\n");
   buddy_free_page(p8);
   buddy_statistics();
 }
