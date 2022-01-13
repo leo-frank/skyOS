@@ -15,6 +15,6 @@
 
 void pmm_init();
 void page_init();
-void* kalloc();
+void* kalloc(uint64 size);
 void kfree(struct Page* p);
 void pmm_test();
