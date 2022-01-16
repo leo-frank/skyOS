@@ -18,3 +18,11 @@
 ## toolchain
 
 [ubuntu prebuilt risc-v toolchain](https://static.dev.sifive.com/dev-tools/riscv64-unknown-elf-gcc-8.3.0-2020.04.1-x86_64-linux-ubuntu14.tar.gz)
+
+## notable
+
+A page table must always be aligned to a page boundary.
+
+The physical page number of the root page table is stored in the satp register’s PPN field.
+
+Sv39 page tables contain 2^9 page table entries (PTEs), 2^3 bytes each.
