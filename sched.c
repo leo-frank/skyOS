@@ -26,12 +26,6 @@ pg_table alloc_pgtable() {
   // map: [kernel_start, pmm_end] -> [kernel_start, pmm_end] (without PTE_U)
   // useful when privilege changed from u to s
   memcpy(t, k_pgtable, PGSIZE);
-  pte *p;
-  // sreturn is in [kernel_start, pmm_end], we want specially map sreturn code
-  // with PTE_U, because sreturn will be executed when in u-mode pagetable
-  p = trans(t, (uint64)sreturn);
-  *p = *p | PTE_U;
-  log_debug("addr:%lx", pte2ppn(*p) << 12);
   log_debug("flush_tlb addr:%lx", flush_tlb);
   return t;
 }
