@@ -56,29 +56,32 @@ QEMUOPT += -kernel $(KERNEL)
 # Compiler flags for the target architecture
 # ------------------------------------------------------------------------------
 
-CFLAGS      	= 	-Wall                        	\
-					-Werror							\
-					-O0								\
-					-fno-omit-frame-pointer			\
-					-ggdb							\
-					-g								\
-					-MD								\
-					-mcmodel=medany					\
-					-ffreestanding					\
-					-fno-common						\
-					-nostdlib						\
-					-mno-relax						\
-					-c								\
+CFLAGS      	= 											  \
+					-Wall                        	\
+					-Werror												\
+					-O0														\
+					-fno-omit-frame-pointer				\
+					-ggdb													\
+					-g														\
+					-MD														\
+					-mcmodel=medany								\
+					-ffreestanding								\
+					-fno-common										\
+					-nostdlib											\
+					-mno-relax										\
+					-c														\
 
 # ------------------------------------------------------------------------------
 # Kernel object files TODO: a better way to config KOBJS
 # ------------------------------------------------------------------------------
-KOBJS			=	entry.o 						\
+KOBJS			=										\
+					entry.o 						\
+					sret.o							\
 					logo.o 							\
 					main.o 							\
 					printf.o 						\
 					console.o						\
-					strings.o 						\
+					strings.o 					\
 					panic.o  						\
 					lock.o 							\
 					pmm.o  							\
@@ -86,6 +89,7 @@ KOBJS			=	entry.o 						\
 					log.o 							\
 					vms.o								\
 					trap.o 							\
+					sched.o 						\
 
 # ------------------------------------------------------------------------------
 # Rules
