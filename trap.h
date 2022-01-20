@@ -16,7 +16,9 @@ void trap_start();
   (1 << 1)  // interrupt-pending bit for supervisor-level software interrupts
 #define SIP_SSIP \
   SIE_STIE  // interrupt-enable bit for supervisor-level software interrupts
+
 #define SSTATUS_SIE (1L << 1)  // Supervisor Interrupt Enable
+#define SSTATUS_SPP (1L << 8)
 
 // Interrupt Exception Code
 #define S_TIMER_INT 5

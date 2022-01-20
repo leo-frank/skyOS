@@ -73,3 +73,14 @@ static inline unsigned long mtime_get() {
   asm volatile("csrr %0, time" : "=r"(x));
   return x;
 }
+
+static inline uint64 satp_get() {
+  uint64 x;
+  asm volatile("csrr %0, satp" : "=r"(x));
+  return x;
+}
+
+static inline void satp_set(uint64 v) {
+  asm volatile("csrw satp, %0" : : "r"(v));
+}
+static inline void sret() { asm volatile("sret" ::); }

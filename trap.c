@@ -49,6 +49,9 @@ char *exception_code_description[] = {"Instruction address misaligned",
                                       "Load page fault",
                                       "Reserved",
                                       "Store/AMO page fault"};
+
+extern void do_timer();
+
 void trap_start() {
   uint64 tval = stval_get();
   uint64 sepc = sepc_get();
@@ -63,8 +66,7 @@ void trap_start() {
     log_debug("interrupt: %s", interrupt_code_description[code]);
     switch (code) {
       case S_TIMER_INT:
-        // acknowledge the timer interrupt by set new val.
-        sbi_set_timer(mtime_get() + TIMER_CLK_RATE);
+        do_timer();
         break;
       default:
         break;
