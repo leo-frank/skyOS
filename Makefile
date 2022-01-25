@@ -48,7 +48,7 @@ SED       = $(PATH_TOOLS_UTIL)sed
 # QEMU options	TODO: when smp 2, how printf works ?
 # ------------------------------------------------------------------------------
 QEMU = qemu-system-riscv64
-QEMUOPT = -machine virt -m 128M -nographic -smp 1
+QEMUOPT = -machine virt -m 64M -nographic -smp 1
 QEMUOPT += -bios $(RUSTSBI)
 QEMUOPT += -kernel $(KERNEL)
 
@@ -90,12 +90,16 @@ KOBJS			=										\
 					vms.o								\
 					trap.o 							\
 					sched.o 						\
+					ramdisk.o
 
 # ------------------------------------------------------------------------------
 # Rules
 # ------------------------------------------------------------------------------
 run: oskernel binutils
-	@$(QEMU) $(QEMUOPT)
+	@$(QEMU) $(QEMUOPT) -initrd ramdisk.img
+
+gdb-qemu: oskernel binutils
+	@$(GDB) --args $(QEMU) $(QEMUOPT) -initrd ramdisk.img
 
 debug: oskernel binutils
 	@$(QEMU) $(QEMUOPT) -S -gdb tcp::1235
