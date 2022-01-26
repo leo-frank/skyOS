@@ -56,3 +56,6 @@ dkms.conf
 
 # generated dir
 build/
+
+# generated image files
+*.img
