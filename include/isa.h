@@ -83,4 +83,3 @@ static inline uint64 satp_get() {
 static inline void satp_set(uint64 v) {
   asm volatile("csrw satp, %0" : : "r"(v));
 }
-static inline void sret() { asm volatile("sret" ::); }

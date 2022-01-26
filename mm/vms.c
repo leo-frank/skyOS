@@ -10,7 +10,7 @@ extern char kernel_start[];
 extern char kernel_end[];
 pg_table k_pgtable;
 
-extern void flush_tlb();
+void flush_tlb() { asm volatile("sfence.vma"); }
 
 static void activate_sv39(uint64 ppn) {
   uint64 v = 0;

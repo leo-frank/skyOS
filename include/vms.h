@@ -33,7 +33,7 @@ typedef pte* pg_table;
 #define PX(level, va) ((((uint64)(va)) >> PXSHIFT(level)) & PXMASK)
 #define PGROUNDUP(sz) (((sz) + PGSIZE - 1) & ~(PGSIZE - 1))
 #define PGROUNDDOWN(a) (((a)) & ~(PGSIZE - 1))
-
+void flush_tlb();
 void vms_init();
 void kmap(pg_table pg, uint64 va, uint64 pa, uint64 size);
 void umap(pg_table pg, uint64 va, uint64 pa, uint64 size);
