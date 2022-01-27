@@ -7,7 +7,9 @@ extern char kernel_start[];
 
 // works only with kernel ram size less than 256MiB
 #define SECTOR_SIZE 512
-uint64 *RAMDISK_BASE = (uint64 *)((uint64)kernel_start + mem_size / 2);
+
+// use char * not uint64*, which has no potential risk when add integer
+char *RAMDISK_BASE = (char *)((uint64)kernel_start + mem_size / 2);
 
 void ramdisk_init() { log_info("ramdisk addr: 0x%x", RAMDISK_BASE); }
 

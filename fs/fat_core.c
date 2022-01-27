@@ -177,6 +177,9 @@ void _fat_file_sector_offset(struct fat_file_handle *h, uint32 *sector,
 }
 
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
+// read size bytes from file h
+// notice that this function will change h->cur_cluster
+// so use it in fat_readdir is very suiatble
 int fat_read(struct fat_file_handle *h, void *buf, int size) {
   int i;
   uint32 sector;

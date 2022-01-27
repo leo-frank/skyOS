@@ -59,6 +59,7 @@ static int ascii_from_utf16(char *ascii, const uint16 *utf16, int count) {
 }
 #endif
 
+// read dir entry from file h, once a time
 int fat_readdir(struct fat_file_handle *h, struct dirent *ent) {
 #ifdef LONG_NAME_SUPPORT
   uint16 csum = -1;
@@ -66,6 +67,7 @@ int fat_readdir(struct fat_file_handle *h, struct dirent *ent) {
   struct fat_sdirent fatent;
   int i, j;
 
+  // read short dir entry fatent from file h, we need to convert next.
   while (fat_read(h, &fatent, sizeof(fatent)) == sizeof(fatent)) {
     if (fatent.name[0] == 0) return -1; /* Empty entry, end of directory */
     if (fatent.name[0] == (char)0xe5) continue; /* Deleted entry */
@@ -188,8 +190,10 @@ int fat_open(struct fat_vol_handle *vol, const char *name, int flags,
 
   /* FIXME: Implement flags O_RDONLY, O_WRONLY, O_RDWR. */
 
+  /* open '.', that is cwd, return cwd directly */
   if (strcmp(name, ".") == 0) {
     /* Special case needed for root dir with no '.' entry */
+    /* root dir dosen't have '.' entry */
     memcpy(file, &vol->cwd, sizeof(*file));
     return 0;
   }
@@ -223,6 +227,7 @@ int fat_open(struct fat_vol_handle *vol, const char *name, int flags,
   return -ENOENT;
 }
 
+/* change vol->cwd to new dir */
 int fat_chdir(struct fat_vol_handle *vol, const char *name) {
   return fat_open(vol, name, 0, &vol->cwd);
 }

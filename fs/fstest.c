@@ -42,23 +42,24 @@ void fstest() {
   assert(fat_vol_init(bldev, &vol) == 0);
   log_info("Fat type is FAT%d\n", vol.type);
 
-  fat_mkdir(&vol, "Directory1");
-  fat_mkdir(&vol, "Directory2");
-  fat_mkdir(&vol, "Directory3");
-  assert(fat_chdir(&vol, "Directory1") == 0);
-  fat_mkdir(&vol, "Directory1");
-  fat_mkdir(&vol, "Directory2");
-  fat_mkdir(&vol, "Directory3");
-  if (fat_create(&vol, "Message file with a long name.txt", O_WRONLY, &file) ==
-      0) {
-    for (int i = 0; i < 100; i++) {
-      char message[80];
-      sprintf(message, "Here is a message %d\n", i);
-      assert(fat_write(&file, message, strlen(message)) ==
-             (int)strlen(message));
-    }
-  }
-  assert(fat_chdir(&vol, "..") == 0);
+  // fat_mkdir(&vol, "Directory1");
+  // fat_mkdir(&vol, "Directory2");
+  // fat_mkdir(&vol, "Directory3");
+  // assert(fat_chdir(&vol, "Directory1") == 0);
+  // fat_mkdir(&vol, "Directory1");
+  // fat_mkdir(&vol, "Directory2");
+  // fat_mkdir(&vol, "Directory3");
+  // if (fat_create(&vol, "Message file with a long name.txt", O_WRONLY, &file)
+  // ==
+  //     0) {
+  //   for (int i = 0; i < 100; i++) {
+  //     char message[80];
+  //     sprintf(message, "Here is a message %d\n", i);
+  //     assert(fat_write(&file, message, strlen(message)) ==
+  //            (int)strlen(message));
+  //   }
+  // }
+  // assert(fat_chdir(&vol, "..") == 0);
   assert(fat_open(&vol, ".", O_RDONLY, &file) == 0);
   print_tree(&vol, &file, rootpath[0] == '/' ? rootpath + 1 : rootpath);
 
