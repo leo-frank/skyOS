@@ -55,7 +55,7 @@ dkms.conf
 .vscode/
 
 # generated dir
-build/
+kernel/build/
 
 # generated image files
 *.img
