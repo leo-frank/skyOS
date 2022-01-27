@@ -138,7 +138,7 @@ oskernel: $(OUTDIR) $(LDSCRIPT) $(MAIN) mkfs
 
 # debug kernel with qemu's ability. need another terminal for run gdb as commented
 debug: oskernel binutils
-	@$(QEMU) $(QEMUOPT) -S -gdb tcp::1235
+	@$(QEMU) $(QEMUOPT) -initrd fat12.img -S -gdb tcp::1235
 # @$(GDB) $(KERNEL) -q -x ./scripts/gdbinit
 
 # debug qemu itself, this is useful at some point, like finding ramdisk addr settings
