@@ -9,6 +9,8 @@ extern struct block_device *block_device_new(const char *filename,
                                              const char *mode);
 extern void block_device_destroy(struct block_device *bldev);
 
+FatVol vol;
+
 void print_tree(struct fat_vol_handle *vol, struct fat_file_handle *dir,
                 const char *path) {
   struct dirent ent;
@@ -30,13 +32,14 @@ void print_tree(struct fat_vol_handle *vol, struct fat_file_handle *dir,
   }
 }
 
+#define FAT_IMAGE "fat12.img"
+
 void fstest() {
   struct block_device *bldev;
-  FatVol vol;
   FatFile file;
   char *rootpath = "/";
 
-  bldev = block_device_new("fat12.img", "r+");
+  bldev = block_device_new(FAT_IMAGE, "r+");
   assert(bldev != NULL);
 
   assert(fat_vol_init(bldev, &vol) == 0);
@@ -62,11 +65,19 @@ void fstest() {
   assert(fat_open(&vol, ".", O_RDONLY, &file) == 0);
   print_tree(&vol, &file, rootpath[0] == '/' ? rootpath + 1 : rootpath);
 
-  assert(fat_open(&vol, "main.c", O_RDONLY, &file) == 0);
-  char buf[512];
-  fat_read(&file, buf, file.size);
-  buf[file.size] = '\0';
-  log_info("%s\n", buf);
+  assert(fat_open(&vol, "idle", O_RDONLY, &file) == 0);
 
   block_device_destroy(bldev);
+}
+
+void filesystem_init() {
+  fstest();
+  struct block_device *bldev;
+
+  bldev = block_device_new(FAT_IMAGE, "r+");
+  assert(fat_vol_init(bldev, &vol) == 0);
+
+  log_info("Fat type is FAT%d\n", vol.type);
+
+  // FIXME: any code for destroy this device ?
 }

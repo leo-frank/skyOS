@@ -25,10 +25,10 @@
 
 #include "bpb.h"
 #include "fcntl.h"
+#include "log.h"
 #include "openfat.h"
 #include "openfat/blockdev.h"
 #include "openfat/leaccess.h"
-
 /* Build time configuration */
 #define MAX_SECTOR_SIZE 512
 
@@ -203,7 +203,11 @@ int fat_read(struct fat_file_handle *h, void *buf, int size) {
     sector++;
     if (h->root_flag) /* FAT12/16 isn't a cluster chain */
       continue;
-    if ((sector % h->fat->sectors_per_cluster) == 0) {
+    /* SIGNED BY LEO-FRANK */
+    // The reason why add tmpoff: sector is a number among data region, so take
+    // first_data_sector % sectors_per_cluster into account!
+    uint32 tmpoff = h->fat->first_data_sector % h->fat->sectors_per_cluster;
+    if (((sector % h->fat->sectors_per_cluster) - tmpoff) == 0) {
       /* Go to next cluster... */
       h->cur_cluster = _fat_get_next_cluster(h->fat, h->cur_cluster);
       if (h->cur_cluster == fat_eoc(h->fat)) return i;
