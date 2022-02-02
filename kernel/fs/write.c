@@ -232,6 +232,7 @@ int fat_write(struct fat_file_handle *h, const void *buf, int size) {
     sector++;
     if (h->root_flag) /* FAT12/16 isn't a cluster chain */
       continue;
+    // FIXME:
     if ((sector % h->fat->sectors_per_cluster) == 0) {
       /* Go to next cluster... */
       uint32 next_cluster =
