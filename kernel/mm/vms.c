@@ -32,14 +32,13 @@ static void map(pg_table pg, uint64 va, uint64 pa, uint64 size, uint perm) {
   int level;
   uint64 va0, pa0;
   pte *p, *a;
-  if (!align(va) || !align(pa) || !align(size)) {
-    log_error("va: 0x%lx, pa: 0x%lx, size: 0x%lx", va, pa, size);
-    panic("not aligned");
-  }
+
+  // FIXME: I am not sure behaviour when va & size not aligned
+
   va0 = va;
   pa0 = pa;
   while (va0 < va + size) {
-    log_trace("mapping va: %x to pa: %x", va0, pa0);
+    log_debug("mapping va: %x to pa: %x", va0, pa0);
     level = 2;
     a = pg;
     while (level >= 0) {
@@ -51,10 +50,10 @@ static void map(pg_table pg, uint64 va, uint64 pa, uint64 size, uint perm) {
         a = (pte*)(pte2ppn(*p) << 12);
       } else if (level != 0) {
         a = kalloc(PGSIZE);
-        log_trace("alloc new page table at: %p", a);
+        log_debug("alloc new page table at: %p", a);
         // when all are zero, the PTE is a pointer to next level of page table
         *p = ((((uint64)a) >> 12) << 10) | (PTE_V | perm);
-        log_trace("create new pte: %lx", *p);
+        log_debug("create new pte: %lx", *p);
       } else if (level == 0) {
         *p = ((((uint64)pa0) >> 12) << 10) |
              (PTE_X | PTE_W | PTE_R | PTE_V | perm);
@@ -98,7 +97,7 @@ pte* trans(pg_table pg, uint64 va) {
   }
   uint64 pa;
   log_debug("find pte: %lx", *p);
-  pa = ((pte2ppn(*p) << 12) + va2offset(va));
+  pa = ((pte2ppn(*p) << 12) + OFFSET(va));
   log_debug("va: 0x%lx -----> pa: 0x%lx", va, pa);
   return p;
 }

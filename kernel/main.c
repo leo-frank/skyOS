@@ -1,11 +1,13 @@
 #include "log.h"
 #include "logo.h"
+#include "openfat.h"
 #include "pmm.h"
 #include "ramdisk.h"
 #include "trap.h"
 #include "vms.h"
-extern void move_to_user_mode();
-extern void fstest();
+
+extern void proctest();
+
 void main() {
   log_set_level(LOG_INFO);
   logo();
@@ -13,6 +15,6 @@ void main() {
   vms_init();
   trap_init();
   ramdisk_init();
-  fstest();
-  // move_to_user_mode();
+  filesystem_init();
+  proctest();
 }

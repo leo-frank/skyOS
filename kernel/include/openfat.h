@@ -213,4 +213,6 @@ struct fat_vol_handle {
   struct fat_file_handle cwd;
 };
 
+void filesystem_init();
+
 #endif

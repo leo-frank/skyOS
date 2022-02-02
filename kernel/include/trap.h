@@ -24,3 +24,4 @@ void trap_start();
 #define S_TIMER_INT 5
 // non-Interrupt Exception Code
 #define ILLEGAL_INSTRUCTION 2
+#define SYSCALL_FROM_U_MODE 8

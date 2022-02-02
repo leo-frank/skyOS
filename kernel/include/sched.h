@@ -1,5 +1,7 @@
-#include "type.h"
+#pragma once
 
+#include "type.h"
+#include "vms.h"
 #define NR_TASK 64
 
 // task state info
@@ -10,12 +12,14 @@
 #define TASK_ZOMBIE 4
 
 #define KSTACKSIZE (1 << 12)
-typedef struct task_struct {
-  uint pid;
-  uint fpid;  // father pid
+struct task_struct {
+  uint32 pid;
+  uint32 fpid;  // father pid
   uint16 state;
   int exit;
-  char stack[KSTACKSIZE];
+  pg_table pgtable;  // user process pagetable
+  uint64 sp;         // user process intial stack sp
+  char kstack[KSTACKSIZE];
   /* time related info */
   uint64 counter;  // ticks remain for running
   uint64 priority;
@@ -23,7 +27,7 @@ typedef struct task_struct {
   uint64 stime;  // ticks running in kernel
   uint64 start_time;
   /* signal related info */
-  uint signal;   // signal bit map
-  uint blocked;  // blcoked signal bit
+  uint32 signal;   // signal bit map
+  uint32 blocked;  // blcoked signal bit
   // struct sigaction sigaction[32];
-} task_struct;
+};

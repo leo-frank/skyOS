@@ -118,16 +118,16 @@ void trap_start(struct trapframe *a0) {
     log_debug("exception: %s", exception_code_description[code]);
     switch (code) {
       case ILLEGAL_INSTRUCTION:
-        log_debug("tval = %p", tval);
-        log_debug("sepc = %p", sepc);
+        log_debug("tval = 0x%lx", tval);
+        log_debug("sepc = 0x%lx", sepc);
         panic("ILLEGAL_INSTRUCTION");
         break;
       case SYSCALL_FROM_U_MODE:
         // syscall();
         break;
       default:
-        log_debug("tval = %p", tval);
-        log_debug("sepc = %p", sepc);
+        log_debug("tval = 0x%lx", tval);
+        log_debug("sepc = 0x%lx", sepc);
         panic("UNEXPECTED EXCEPTION");
     }
     sepc_set(sepc + 4);
