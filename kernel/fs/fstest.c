@@ -71,7 +71,6 @@ void fstest() {
 }
 
 void filesystem_init() {
-  fstest();
   struct block_device *bldev;
 
   bldev = block_device_new(FAT_IMAGE, "r+");
