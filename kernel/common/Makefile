@@ -49,6 +49,6 @@ objs: $(OBJ)
 .PHONY: clean install
 
 clean:	
-	-rm -rf $(addprefix $(BUILD)/, $(DFILES)) $(addprefix $(BUILD)/, $(OBJ))
+	@rm -rf $(addprefix $(BUILD)/, $(DFILES)) $(addprefix $(BUILD)/, $(OBJ))
 
 -include *.d
