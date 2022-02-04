@@ -1,0 +1,31 @@
+initial page table for kernel use:
+(kernel_start, pmm_end) -> (kernel_start, pmm_end)
+
+userspace process has an pgtable like:
+PTE_U: (elf.ph.vaddr, elf.ph.vaddr + ph.memsz) -> (elf_alloc_start, elf_alloc_start + ph.memsz)
+without PTE_U: (kernel_start, pmm_end) -> (kernel_start, pmm_end)
+notice that (elf_alloc_start, elf_alloc_start + ph.memsz) is subset of (kernel_start, pmm_end)
+
+eg:
+PTE_U: (1000, 2000) -> (81000, 82000)
+without PTE_U: (80000, 90000) -> (80000, 90000)
+
+when userspace process traps into kernel: 
+change from u-mode to s-mode, but no pagetable switch.
+
+I use the SUM bit feature for data transfer from u-mode to s-mode: 
+
+The SUM (permit Supervisor User Memory access) bit modifies the privilege with which S-mode
+loads and stores access virtual memory. When SUM=0, S-mode memory accesses to pages that are
+accessible by U-mode (U=1 in Figure 4.18) will fault. When SUM=1, these accesses are permitted.
+SUM has no effect when page-based virtual memory is not in effect, nor when executing in U-mode.
+Note that S-mode can never execute instructions from user pages, regardless of the state of SUM
+
+The SUM mechanism prevents supervisor software from inadvertently accessing user memory.
+Operating systems can execute the majority of code with SUM clear; the few code segments that
+should access user memory can temporarily set SUM.
+
+MAYBE ENABLE SUM BIT IS RISK, BUT FAST!
+
+
+

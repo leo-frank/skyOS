@@ -3,8 +3,8 @@
 #include "isa.h"
 #include "log.h"
 #include "sbi.h"
+#include "strings.h"
 #include "type.h"
-
 // define in entry.S
 void trap_entry();
 
@@ -91,8 +91,34 @@ char *exception_code_description[] = {"Instruction address misaligned",
                                       "Store/AMO page fault"};
 
 extern void do_timer();
-extern void syscall();
 extern void trap_return(struct trapframe *a0);
+
+int sys_write(uint64 fd, char *buf, uint64 len) {
+  char c;
+  if (fd == 0) {
+    sstatus_set(sstatus_get() | SSTATUS_SUM);
+    memcpy(&c, buf, 1);
+    printf("%c", c);
+    sstatus_set(sstatus_get() & ~SSTATUS_SUM);
+  }
+  return 1;
+}
+// typedef int (*fn_ptr)();
+// fn_ptr sys_call_table[] = [sys_write];
+
+void syscall(struct trapframe *t) {
+  // ld	a3,-128(s0)
+  // 切換棧指針
+  uint64 syscall_num;
+
+  syscall_num = t->a7;
+  if (syscall_num == 64) {
+    uint64 fd = t->a0;
+    char *buf = (char *)(t->a1);
+    uint64 len = t->a2;
+    sys_write(fd, buf, len);
+  }
+}
 
 void trap_start(struct trapframe *a0) {
   uint64 tval = stval_get();
@@ -122,11 +148,14 @@ void trap_start(struct trapframe *a0) {
         panic("ILLEGAL_INSTRUCTION");
         break;
       case SYSCALL_FROM_U_MODE:
-        // syscall();
-        break;
-      default:
         log_debug("tval = 0x%lx", tval);
         log_debug("sepc = 0x%lx", sepc);
+        syscall(a0);
+        break;
+      default:
+        log_info("exception: %s", exception_code_description[code]);
+        log_info("tval = 0x%lx", tval);
+        log_info("sepc = 0x%lx", sepc);
         panic("UNEXPECTED EXCEPTION");
     }
     sepc_set(sepc + 4);

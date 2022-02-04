@@ -19,6 +19,7 @@ void trap_start();
 
 #define SSTATUS_SIE (1L << 1)  // Supervisor Interrupt Enable
 #define SSTATUS_SPP (1L << 8)
+#define SSTATUS_SUM (1L << 18)
 
 // Interrupt Exception Code
 #define S_TIMER_INT 5

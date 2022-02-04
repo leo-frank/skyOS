@@ -8,6 +8,8 @@
 
 extern void proctest();
 
+void end();
+
 void main() {
   log_set_level(LOG_INFO);
   logo();
@@ -16,5 +18,14 @@ void main() {
   trap_init();
   ramdisk_init();
   filesystem_init();
+  // log_set_level(LOG_DEBUG);
   proctest();
+  end();
+}
+
+void end() {
+  log_info("execute to end of OS ...");
+  log_info("a forever loop start ...");
+  while (1)
+    ;
 }

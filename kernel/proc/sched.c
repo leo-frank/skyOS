@@ -19,7 +19,7 @@ int pidmap[NR_TASK];
 extern pg_table k_pgtable;
 extern void sreturn();
 extern void flush_tlb();
-
+extern void end();
 // allocate user pagetable
 pg_table alloc_pgtable() {
   pg_table t = kalloc(PGSIZE);
@@ -175,24 +175,11 @@ void proctest() {
   satp_set((SV39_ADDRESSING_MODE << 60) + ((uint64)(p->pgtable) >> 12));
   // set stack pointer
   asm volatile("mv sp, %0" : : "r"(p->sp));
+  // FIXME:
+  asm volatile("mv ra, %0" : : "r"((uint64)end));
   // sret
-  sreturn();
+  asm volatile("sret");
 }
-
-// TODO: syscall!
-// int sys_write(unsigned int fd, char *buf, int count) {
-//   if (fd == 1) {
-//     log_info("%s", buf);
-//   }
-// }
-// typedef int (*fn_ptr)();
-// fn_ptr sys_call_table[] = [sys_write];
-
-// void syscall() {
-//   // ld	a3,-128(s0)
-//   uint64 syscall_num;
-//   asm volatile("sd a7 %0" :) asm volatile("csrr %0, time" : "=r"(x));
-// }
 
 // TODO: schedule!
 // void schedule() {
