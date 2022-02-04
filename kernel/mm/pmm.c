@@ -2,7 +2,6 @@
 
 #include "lock.h"
 #include "log.h"
-#include "panic.h"
 #include "strings.h"
 #include "type.h"
 

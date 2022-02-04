@@ -2,7 +2,6 @@
 
 #include "isa.h"
 #include "log.h"
-#include "panic.h"
 #include "sbi.h"
 #include "type.h"
 

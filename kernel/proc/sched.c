@@ -1,12 +1,10 @@
 #include "sched.h"
 
-#include "assert.h"
 #include "elf.h"
 #include "fcntl.h"
 #include "isa.h"
 #include "log.h"
 #include "openfat.h"
-#include "panic.h"
 #include "pmm.h"
 #include "printf.h"
 #include "sbi.h"

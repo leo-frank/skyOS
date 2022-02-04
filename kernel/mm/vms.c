@@ -2,7 +2,6 @@
 #include "vms.h"
 
 #include "log.h"
-#include "panic.h"
 #include "pmm.h"
 #include "type.h"
 

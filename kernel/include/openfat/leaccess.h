@@ -48,7 +48,7 @@ static inline void __put_le32(uint32 *p, uint32 v) {
 }
 
 #ifdef __TEST__
-#include <assert.h>
+#include <log.h>
 #include <stdio.h>
 int main(void) {
   const char testdata[] = "\x01\x23\x45\x67";

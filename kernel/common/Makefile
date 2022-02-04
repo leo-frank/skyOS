@@ -33,7 +33,7 @@ CFLAGS      	= 											  \
 # ------------------------------------------------------------------------------
 # Source & Object files
 # ------------------------------------------------------------------------------
-SRC = assert.c log.c logo.c panic.c printf.c strings.c
+SRC = log.c logo.c printf.c strings.c
 OBJ = $(SRC:.c=.o)
 DFILES = $(SRC:.c=.d)
 
