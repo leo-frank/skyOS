@@ -50,7 +50,7 @@ char *exception_code_description[] = {"Instruction address misaligned",
                                       "Reserved",
                                       "Store/AMO page fault"};
 
-extern void do_timer();
+extern void do_timer(struct context *a0);
 extern void trap_return(struct context *a0);
 
 // typedef int (*fn_ptr)();
@@ -74,7 +74,7 @@ void trap_start(struct context *a0) {
       case S_TIMER_INT:
         log_debug("tval = 0x%lx", tval);
         log_debug("sepc = 0x%lx", sepc);
-        do_timer();
+        do_timer(a0);
         break;
       default:
         break;
@@ -83,8 +83,8 @@ void trap_start(struct context *a0) {
     log_debug("exception: %s", exception_code_description[code]);
     switch (code) {
       case ILLEGAL_INSTRUCTION:
-        log_debug("tval = 0x%lx", tval);
-        log_debug("sepc = 0x%lx", sepc);
+        log_info("tval = 0x%lx", tval);
+        log_info("sepc = 0x%lx", sepc);
         panic("ILLEGAL_INSTRUCTION");
         break;
       case SYSCALL_FROM_U_MODE:

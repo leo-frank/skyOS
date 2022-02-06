@@ -64,7 +64,7 @@ pg_table alloc_pgtable() {
 //   sreturn();
 // }
 
-void do_timer() {
+void do_timer(struct context *a0) {
   uint64 status = sstatus_get();
   char status_spp = (status & SSTATUS_SPP) >> 8;
   if (status_spp == 0) {
@@ -81,6 +81,9 @@ void do_timer() {
   sbi_set_timer(mtime_get() + TIMER_CLK_RATE);
   if (status_spp == 0) {
     // we only switch if timer interrupt from u-mode
+    // save context
+    memcpy(&(current_task->context), a0, sizeof(current_task->context));
+    // then schedule
     schedule();
   }
 }
@@ -140,13 +143,9 @@ void switch_to(struct task_struct *next) {
   sepc_set(next->context.ra);
   // set satp.PPN with userspace pagetable
   satp_set((SV39_ADDRESSING_MODE << 60) + ((uint64)(next->pgtable) >> 12));
+  // sfence.vma
+  flush_tlb();
   trap_return(&(next->context));
-  // // set stack pointer
-  // asm volatile("mv sp, %0" : : "r"(next->context.sp));
-  // // FIXME:
-  // asm volatile("mv ra, %0" : : "r"((uint64)end));
-  // // sret
-  // asm volatile("sret");
 }
 
 void schedule() {
