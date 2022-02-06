@@ -3,53 +3,13 @@
 #include "isa.h"
 #include "log.h"
 #include "sbi.h"
+#include "sched.h"
 #include "strings.h"
 #include "type.h"
 // define in entry.S
 void trap_entry();
 
 extern char sscratch_stack[];
-
-struct trapframe {
-  /* NOT USED */
-  /*   0 */ uint64 kernel_satp;  // kernel page table
-  /*   8 */ uint64 kernel_sp;    // top of process's kernel stack
-  /*  16 */ uint64 kernel_trap;  // usertrap() 切换到内核后我们会跳到这里执行。
-  /*  24 */ uint64 epc;            // saved user program counter
-  /*  32 */ uint64 kernel_hartid;  // saved kernel tp
-
-  /*  40 */ uint64 ra;
-  /*  48 */ uint64 sp;
-  /*  56 */ uint64 gp;
-  /*  64 */ uint64 tp;
-  /*  72 */ uint64 t0;
-  /*  80 */ uint64 t1;
-  /*  88 */ uint64 t2;
-  /*  96 */ uint64 s0;
-  /* 104 */ uint64 s1;
-  /* 112 */ uint64 a0;
-  /* 120 */ uint64 a1;
-  /* 128 */ uint64 a2;
-  /* 136 */ uint64 a3;
-  /* 144 */ uint64 a4;
-  /* 152 */ uint64 a5;
-  /* 160 */ uint64 a6;
-  /* 168 */ uint64 a7;
-  /* 176 */ uint64 s2;
-  /* 184 */ uint64 s3;
-  /* 192 */ uint64 s4;
-  /* 200 */ uint64 s5;
-  /* 208 */ uint64 s6;
-  /* 216 */ uint64 s7;
-  /* 224 */ uint64 s8;
-  /* 232 */ uint64 s9;
-  /* 240 */ uint64 s10;
-  /* 248 */ uint64 s11;
-  /* 256 */ uint64 t3;
-  /* 264 */ uint64 t4;
-  /* 272 */ uint64 t5;
-  /* 280 */ uint64 t6;
-};
 
 void trap_init() {
   // stack that reserve trap context
@@ -91,36 +51,14 @@ char *exception_code_description[] = {"Instruction address misaligned",
                                       "Store/AMO page fault"};
 
 extern void do_timer();
-extern void trap_return(struct trapframe *a0);
+extern void trap_return(struct context *a0);
 
-int sys_write(uint64 fd, char *buf, uint64 len) {
-  char c;
-  if (fd == 0) {
-    sstatus_set(sstatus_get() | SSTATUS_SUM);
-    memcpy(&c, buf, 1);
-    printf("%c", c);
-    sstatus_set(sstatus_get() & ~SSTATUS_SUM);
-  }
-  return 1;
-}
 // typedef int (*fn_ptr)();
 // fn_ptr sys_call_table[] = [sys_write];
 
-void syscall(struct trapframe *t) {
-  // ld	a3,-128(s0)
-  // 切換棧指針
-  uint64 syscall_num;
+extern void syscall(struct context *t);
 
-  syscall_num = t->a7;
-  if (syscall_num == 64) {
-    uint64 fd = t->a0;
-    char *buf = (char *)(t->a1);
-    uint64 len = t->a2;
-    sys_write(fd, buf, len);
-  }
-}
-
-void trap_start(struct trapframe *a0) {
+void trap_start(struct context *a0) {
   uint64 tval = stval_get();
   uint64 sepc = sepc_get();
   uint64 cause = scause_get();
@@ -134,6 +72,8 @@ void trap_start(struct trapframe *a0) {
     log_debug("interrupt: %s", interrupt_code_description[code]);
     switch (code) {
       case S_TIMER_INT:
+        log_debug("tval = 0x%lx", tval);
+        log_debug("sepc = 0x%lx", sepc);
         do_timer();
         break;
       default:

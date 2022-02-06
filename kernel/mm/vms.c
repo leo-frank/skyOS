@@ -3,6 +3,7 @@
 
 #include "log.h"
 #include "pmm.h"
+#include "sched.h"
 #include "type.h"
 
 extern char kernel_start[];
@@ -27,7 +28,7 @@ static uint64 r_satp() {
 // FIXME:
 // 1. perm
 // 2. lock the pg when we modify it
-static void map(pg_table pg, uint64 va, uint64 pa, uint64 size, uint perm) {
+void map(pg_table pg, uint64 va, uint64 pa, uint64 size, uint perm) {
   int level;
   uint64 va0, pa0;
   pte *p, *a;
@@ -62,14 +63,6 @@ static void map(pg_table pg, uint64 va, uint64 pa, uint64 size, uint perm) {
     va0 += PGSIZE;
     pa0 += PGSIZE;
   }
-}
-
-void kmap(pg_table pg, uint64 va, uint64 pa, uint64 size) {
-  map(pg, va, pa, size, 0);
-}
-
-void umap(pg_table pg, uint64 va, uint64 pa, uint64 size) {
-  map(pg, va, pa, size, PTE_U);
 }
 
 pte* trans(pg_table pg, uint64 va) {

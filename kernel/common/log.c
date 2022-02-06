@@ -69,7 +69,12 @@ void log_set_level(int level) { LOG_L.level = level; }
 
 void log_set_quiet(bool enable) { LOG_L.quiet = enable; }
 
-void log_init() { init_lock(&(LOG_L.lock)); }
+// extern void printf_init();
+
+void log_init() {
+  init_lock(&(LOG_L.lock));
+  // printf_init();
+}
 
 void log_log(int level, const char *file, int line, const char *fmt, ...) {
   log_Event ev = {

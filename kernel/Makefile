@@ -94,6 +94,7 @@ KOBJS			=										\
 					sched.o 						\
 					ramdisk.o						\
 					block_dev.o					\
+					syscall.o 					\
 
 KFSOBJS = fat_core.o direntry.o mbr.o write.o fstest.o
 # ------------------------------------------------------------------------------

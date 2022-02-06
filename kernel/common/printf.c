@@ -907,28 +907,43 @@ static int _vsnprintf(out_fct_type out, char* buffer, const size_t maxlen,
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "lock.h"
+
+/*
+static struct { struct spinlock lock; } PRINTF_LOCK;
+void printf_init() { init_lock(&(PRINTF_LOCK.lock)); }
+static void lock(void) { acquire(&PRINTF_LOCK.lock); }
+static void unlock(void) { release(&PRINTF_LOCK.lock); }
+*/
+
 int printf_(const char* format, ...) {
+  // lock();
   va_list va;
   va_start(va, format);
   char buffer[1];
   const int ret = _vsnprintf(_out_char, buffer, (size_t)-1, format, va);
   va_end(va);
+  // unlock();
   return ret;
 }
 
 int sprintf_(char* buffer, const char* format, ...) {
+  // lock();
   va_list va;
   va_start(va, format);
   const int ret = _vsnprintf(_out_buffer, buffer, (size_t)-1, format, va);
   va_end(va);
+  // unlock();
   return ret;
 }
 
 int snprintf_(char* buffer, size_t count, const char* format, ...) {
+  // lock();
   va_list va;
   va_start(va, format);
   const int ret = _vsnprintf(_out_buffer, buffer, count, format, va);
   va_end(va);
+  // unlock();
   return ret;
 }
 

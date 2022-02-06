@@ -79,6 +79,7 @@ uint32 _fat_get_next_cluster(const struct fat_vol_handle *h, uint32 cluster) {
   sector = h->reserved_sector_count + (offset / h->bytes_per_sector);
   offset %= h->bytes_per_sector;
 
+  // get FAT content
   FAT_GET_SECTOR(h, sector);
 
   if (h->type == FAT_TYPE_FAT12) {

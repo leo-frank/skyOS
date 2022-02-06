@@ -1,6 +1,16 @@
+#include "lock.h"
 #include "log.h"
 #include "sbi.h"
-void _putchar(char ch) { sbi_console_putchar(ch); }
+
+struct console {
+  struct spinlock console_lock;
+};
+struct console console;
+void _putchar(char ch) {
+  acquire(&console.console_lock);
+  sbi_console_putchar(ch);
+  release(&console.console_lock);
+}
 
 char getchar(char ch) { return sbi_console_getchar(); }
 

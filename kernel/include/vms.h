@@ -39,6 +39,5 @@ typedef pte* pg_table;
 #define OFFSET(addr) (addr & (PGSIZE - 1))
 void flush_tlb();
 void vms_init();
-void kmap(pg_table pg, uint64 va, uint64 pa, uint64 size);
-void umap(pg_table pg, uint64 va, uint64 pa, uint64 size);
 pte* trans(pg_table pg, uint64 va);
+void map(pg_table pg, uint64 va, uint64 pa, uint64 size, uint perm);

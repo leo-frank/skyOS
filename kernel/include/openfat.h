@@ -177,7 +177,7 @@ struct fat_file_handle {
   uint32 size;
   uint32 first_cluster;
   /* Internal state information */
-  uint32 position;    /* current write & read position */
+  uint32 position;    /* current write & read position(bytes) */
   uint32 cur_cluster; /* This is used for sector on FAT12/16 root */
   uint8 root_flag;    /* Flag to mark root directory on FAT12/16 */
   int flags;

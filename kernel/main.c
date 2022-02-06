@@ -3,10 +3,11 @@
 #include "openfat.h"
 #include "pmm.h"
 #include "ramdisk.h"
+// #include "sched.h"
 #include "trap.h"
 #include "vms.h"
 
-extern void proctest();
+extern void execve(char *);
 
 void end();
 
@@ -19,7 +20,7 @@ void main() {
   ramdisk_init();
   filesystem_init();
   // log_set_level(LOG_DEBUG);
-  proctest();
+  execve("idle");
   end();
 }
 

@@ -14,12 +14,16 @@
 
 uint64 volatile jiffies = 0;
 struct task_struct task[NR_TASK];
+struct task_struct *current_task;
+
+// pidmap[i] = 1, means process i is live
 int pidmap[NR_TASK];
 
 extern pg_table k_pgtable;
 extern void sreturn();
 extern void flush_tlb();
 extern void end();
+
 // allocate user pagetable
 pg_table alloc_pgtable() {
   pg_table t = kalloc(PGSIZE);
@@ -35,30 +39,30 @@ pg_table alloc_pgtable() {
 }
 
 // until now, this is a simple test userspace handler
-void move_to_user_mode() {
-  char *idle;
-  pg_table user_pgt;
+// void move_to_user_mode() {
+//   char *idle;
+//   pg_table user_pgt;
 
-  // set status.spp = 0, then return to user mode
-  sstatus_set(sstatus_get() & ~SSTATUS_SPP);
-  // set sepc = 0, then return to userspace addr 0
-  sepc_set((uint64)0);
+//   // set status.spp = 0, then return to user mode
+//   sstatus_set(sstatus_get() & ~SSTATUS_SPP);
+//   // set sepc = 0, then return to userspace addr 0
+//   sepc_set((uint64)0);
 
-  user_pgt = alloc_pgtable();
+//   user_pgt = alloc_pgtable();
 
-  // primary idle userspace process, do while()
-  idle = kalloc(PGSIZE);
-  idle[0] = 0x01, idle[1] = 0xa0;
-  // map: [0, PGSIZE] -> [idle, idle + PGSIZE]
-  umap(user_pgt, (uint64)0, (uint64)idle, PGSIZE);
+//   // primary idle userspace process, do while()
+//   idle = kalloc(PGSIZE);
+//   idle[0] = 0x01, idle[1] = 0xa0;
+//   // map: [0, PGSIZE] -> [idle, idle + PGSIZE]
+//   umap(user_pgt, (uint64)0, (uint64)idle, PGSIZE);
 
-  // set satp.PPN with userspace pagetable
-  satp_set((SV39_ADDRESSING_MODE << 60) + ((uint64)(user_pgt) >> 12));
+//   // set satp.PPN with userspace pagetable
+//   satp_set((SV39_ADDRESSING_MODE << 60) + ((uint64)(user_pgt) >> 12));
 
-  // FIXME: flush_tlb();
+//   // FIXME: flush_tlb();
 
-  sreturn();
-}
+//   sreturn();
+// }
 
 void do_timer() {
   uint64 status = sstatus_get();
@@ -73,7 +77,12 @@ void do_timer() {
     panic("unexpected status.spp");
   }
   jiffies++;
+  // show_process_virtual_mem_map(current_task);
   sbi_set_timer(mtime_get() + TIMER_CLK_RATE);
+  if (status_spp == 0) {
+    // we only switch if timer interrupt from u-mode
+    schedule();
+  }
 }
 
 extern FatVol vol;
@@ -81,6 +90,7 @@ extern FatVol vol;
 uint32 alloc_pid() {
   for (uint32 i = 0; i < NR_TASK; i++) {
     if (pidmap[i] == 0) {
+      pidmap[i] = 1;
       log_debug("[proc] allocate pid %d", i);
       return i;
     }
@@ -89,22 +99,100 @@ uint32 alloc_pid() {
   return 0;  // won't go here
 }
 
+uint32 get_process_count() {
+  uint32 cnt = 0;
+  for (uint32 i = 0; i < NR_TASK; i++) {
+    if (pidmap[i] != 0) {
+      cnt++;
+    }
+  }
+  return cnt;
+}
+
+void show_process_virtual_mem_map(struct task_struct *p) {
+  uint32 i = 0;
+  printf("pid: %u, name: %s\n", p->pid, p->filename);
+  for (i = 0; i < MAX_VMA_NUM; i++) {
+    if (p->mem_map[i].mem_range != 0) {
+      printf("%u: [0x%lx, 0x%lx]\n", i, p->mem_map[i].mem_start,
+             p->mem_map[i].mem_start + p->mem_map[i].mem_range);
+    }
+  }
+  printf("\n");
+}
+
 struct task_struct *alloc_process() {
   int pid = alloc_pid();
   struct task_struct *p = &task[pid];
   p->pid = pid;
   p->state = TASK_RUNNING;
   p->pgtable = alloc_pgtable();
-  p->sp = SV39_USER_SP_ADDR;
+  (p->context).sp = SV39_USER_SP_ADDR;
   return p;
 }
+extern void trap_return(struct context *a0);
 
-void proctest() {
+// switch to another process's userspace, including the pagetable
+void switch_to(struct task_struct *next) {
+  // set status.spp = 0, then return to user mode
+  sstatus_set(sstatus_get() & ~SSTATUS_SPP);
+  // set sepc
+  sepc_set(next->context.ra);
+  // set satp.PPN with userspace pagetable
+  satp_set((SV39_ADDRESSING_MODE << 60) + ((uint64)(next->pgtable) >> 12));
+  trap_return(&(next->context));
+  // // set stack pointer
+  // asm volatile("mv sp, %0" : : "r"(next->context.sp));
+  // // FIXME:
+  // asm volatile("mv ra, %0" : : "r"((uint64)end));
+  // // sret
+  // asm volatile("sret");
+}
+
+void schedule() {
+  uint i;
+  struct task_struct *p, *next = NULL;
+start:
+  // find task with max counter
+  for (i = 0; i < NR_TASK; i++) {
+    p = &task[i];
+    // FIXME: algorithm here will only find the first running task, need fix
+    if (p->pgtable != NULL && p->state == TASK_RUNNING && p != current_task) {
+      next = p;
+      break;
+    }
+  }
+  if (next) {
+    current_task = next;
+    switch_to(next);
+  } else {
+    goto start;
+  }
+}
+
+// copy current's physical memory and map on p
+void copy_mem_from(struct task_struct *p, struct task_struct *current) {
+  uint32 i;
+  sstatus_set(sstatus_get() | SSTATUS_SUM);
+  for (i = 0; i < MAX_VMA_NUM; i++) {
+    if (current->mem_map[i].mem_range != 0) {
+      char *pa = kalloc(current->mem_map[i].mem_range);
+      memcpy(pa, (char *)current->mem_map[i].mem_start,
+             current->mem_map[i].mem_range);
+      umap(p, current->mem_map[i].mem_start, (uint64)pa,
+           current->mem_map[i].mem_range);
+    }
+  }
+  sstatus_set(sstatus_get() & ~SSTATUS_SUM);
+}
+
+void execve(char *filename) {
   FatFile file;
-  assert(fat_open(&vol, "idle", O_RDONLY, &file) == 0);
+  assert(fat_open(&vol, filename, O_RDONLY, &file) == 0);
 
   /* allocate new process struct for elf */
   struct task_struct *p = alloc_process();
+  memcpy(p->filename, filename, sizeof(filename));
 
   /* allocate space for placing elf binary code */
   char *elfcontent = kalloc(file.size);
@@ -142,7 +230,7 @@ void proctest() {
     if (!align(tmp)) panic("...");
 
     memcpy(tmp, (char *)elfcontent + ph->off, ph->memsz);
-    umap(p->pgtable, ph->vaddr, (uint64)(tmp), ph->memsz);
+    umap(p, ph->vaddr, (uint64)(tmp), ph->memsz);
     if (ph->vaddr <= header->entry && header->entry < ph->vaddr + ph->memsz) {
       // should be 0
       SEPC_OFFSET = OFFSET((uint64)(tmp));
@@ -164,49 +252,35 @@ void proctest() {
   if (!align(stack)) {
     panic("stack paddr not aligned");
   }
-  umap(p->pgtable, (p->sp) - 4 * PGSIZE, stack - 4 * PGSIZE, PGSIZE * 4);
+  umap(p, (p->context).sp - 4 * PGSIZE, stack - 4 * PGSIZE, PGSIZE * 4);
 
-  // set status.spp = 0, then return to user mode
-  sstatus_set(sstatus_get() & ~SSTATUS_SPP);
-  // set sepc
-  sepc_set((uint64)(header->entry) + SEPC_OFFSET);
-  log_debug("return to address 0x%lx", (uint64)(header->entry) + SEPC_OFFSET);
-  // set satp.PPN with userspace pagetable
-  satp_set((SV39_ADDRESSING_MODE << 60) + ((uint64)(p->pgtable) >> 12));
-  // set stack pointer
-  asm volatile("mv sp, %0" : : "r"(p->sp));
-  // FIXME:
-  asm volatile("mv ra, %0" : : "r"((uint64)end));
-  // sret
-  asm volatile("sret");
+  /* set process context for later switch */
+  p->context.ra = (uint64)(header->entry) + SEPC_OFFSET;
+
+  current_task = p;
+
+  show_process_virtual_mem_map(p);
+
+  switch_to(p);
 }
 
-// TODO: schedule!
-// void schedule() {
-//   uint i, next;
-//   uint64 maxc = 0;  // find max counter
-//   task_struct *p;
-// start:
-//   // find task with max counter
-//   for (i = 0; i < NR_TASK; i++) {
-//     p = task[i];
-//     if (p) {
-//       if (p->state == TASK_RUNNING && p->counter > maxc) {
-//         maxc = p->counter, next = i;
-//       }
-//     } else {
-//       continue;
-//     }
-//   }
-//   if (maxc != 0) {
-//     switch_to(next);
-//   } else {
-//     for (i = 0; i < NR_TASK; i++) {
-//       p = task[i];
-//       if (p) {
-//         p->counter = p->priority;
-//       }
-//     }
-//     goto start;
-//   }
-// }
+void vma_insert(struct task_struct *p, uint64 va, uint64 size, uint32 flag) {
+  uint32 i;
+  for (i = 0; i < MAX_VMA_NUM; i++) {
+    if (p->mem_map[i].mem_range == 0) {
+      p->mem_map[i].mem_start = va;
+      p->mem_map[i].mem_range = size;
+      p->mem_map[i].flags = flag;
+      return;
+    }
+  }
+}
+
+void kmap(pg_table pg, uint64 va, uint64 pa, uint64 size) {
+  map(pg, va, pa, size, 0);
+}
+
+void umap(struct task_struct *p, uint64 va, uint64 pa, uint64 size) {
+  vma_insert(p, va, size, PTE_U);
+  map(p->pgtable, va, pa, size, PTE_U);
+}

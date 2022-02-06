@@ -40,15 +40,16 @@ CFLAGS      	= 											  \
 # ------------------------------------------------------------------------------
 # Source & Object files TODO: better config way
 # ------------------------------------------------------------------------------
-SRC = idle.c
-OBJ = idle.o printf.o sys.o
+SRC = idle.c idle2.c
+OBJ = idle.o idle2.o printf.o sys.o
 DFILES = $(OBJ:.o=.d)
 
 # ------------------------------------------------------------------------------
 # Rules
 # ------------------------------------------------------------------------------
 objs: $(OBJ)
-	@$(LD) $(LDFLAGS) -o idle $(OBJ)
+	@$(LD) $(LDFLAGS) -o idle idle.o printf.o sys.o
+	@$(LD) $(LDFLAGS) -o idle2 idle2.o printf.o sys.o
 
 %.o : %.c
 	@$(ECHO) +++ compile: $<
@@ -65,6 +66,3 @@ clean:
 	@rm -rf idle
 
 -include *.d
-
-# FIXME:
-# when I use LDFLAGS, the program idle can't be executed on Linux, give me a reason.
