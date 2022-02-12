@@ -106,6 +106,9 @@ run: oskernel binutils mkfs
 # TODO: since we are using driver for ramdisk, we can't use img files too large.
 # so now use fat12.img temporarily whose space is only 1MiB.
 mkfs: fat12.img
+	@sudo mount fat12.img mnt/
+	@sudo cp ../user/idle ./mnt
+	@sudo umount mnt
 
 fat12.img:
 	dd if=/dev/zero of=$@ bs=512 count=2048
