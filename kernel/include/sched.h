@@ -13,6 +13,9 @@
 
 #define KSTACKSIZE (1 << 12)
 
+// TODO: fake counter, not a good role
+#define TASK_INITIAL_COUNTER 256
+
 struct context {
   /*  0 */ uint64 ra;
   /*  8 */ uint64 sp;

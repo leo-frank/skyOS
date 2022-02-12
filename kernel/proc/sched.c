@@ -77,6 +77,7 @@ void do_timer(struct context *a0) {
     panic("unexpected status.spp");
   }
   jiffies++;
+  current_task->counter--;
   // show_process_virtual_mem_map(current_task);
   sbi_set_timer(mtime_get() + TIMER_CLK_RATE);
   if (status_spp == 0) {
@@ -130,6 +131,7 @@ struct task_struct *alloc_process() {
   p->pid = pid;
   p->state = TASK_RUNNING;
   p->pgtable = alloc_pgtable();
+  p->counter = TASK_INITIAL_COUNTER;
   (p->context).sp = SV39_USER_SP_ADDR;
   return p;
 }
@@ -150,13 +152,13 @@ void switch_to(struct task_struct *next) {
 
 void schedule() {
   uint i;
-  struct task_struct *p, *next = NULL;
-start:
+  // default next task is current_task, that means no task switch happens.
+  struct task_struct *p, *next = current_task;
   // find task with max counter
   for (i = 0; i < NR_TASK; i++) {
     p = &task[i];
-    // FIXME: algorithm here will only find the first running task, need fix
-    if (p->pgtable != NULL && p->state == TASK_RUNNING && p != current_task) {
+    if (p->pgtable != NULL && p->state == TASK_RUNNING && p != current_task &&
+        p->counter > next->counter) {
       next = p;
       break;
     }
@@ -164,9 +166,8 @@ start:
   if (next) {
     current_task = next;
     switch_to(next);
-  } else {
-    goto start;
   }
+  return;
 }
 
 // copy current's physical memory and map on p
