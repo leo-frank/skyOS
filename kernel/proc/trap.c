@@ -58,6 +58,40 @@ extern void trap_return(struct context *a0);
 
 extern void syscall(struct context *t);
 
+void dump_context(struct context *context) {
+  printf("a0: %p\t", context->a0);
+  printf("a1: %p\n", context->a1);
+  printf("a2: %p\t", context->a2);
+  printf("a3: %p\n", context->a3);
+  printf("a4: %p\t", context->a4);
+  printf("a5: %p\n", context->a5);
+  printf("a6: %p\t", context->a6);
+  printf("a7: %p\n", context->a7);
+  printf("t0: %p\t", context->t0);
+  printf("t1: %p\n", context->t1);
+  printf("t2: %p\t", context->t2);
+  printf("t3: %p\n", context->t3);
+  printf("t4: %p\t", context->t4);
+  printf("t5: %p\n", context->t5);
+  printf("t6: %p\t", context->t6);
+  printf("s0: %p\n", context->s0);
+  printf("s1: %p\t", context->s1);
+  printf("s2: %p\n", context->s2);
+  printf("s3: %p\t", context->s3);
+  printf("s4: %p\n", context->s4);
+  printf("s5: %p\t", context->s5);
+  printf("s6: %p\n", context->s6);
+  printf("s7: %p\t", context->s7);
+  printf("s8: %p\n", context->s8);
+  printf("s9: %p\t", context->s9);
+  printf("s10: %p\n", context->s10);
+  printf("s11: %p\t", context->s11);
+  printf("ra: %p\n", context->ra);
+  printf("sp: %p\t", context->sp);
+  printf("gp: %p\n", context->gp);
+  printf("tp: %p\t", context->tp);
+  // printf("epc: %p\n", context->epc);
+}
 void trap_start(struct context *a0) {
   uint64 tval = stval_get();
   uint64 sepc = sepc_get();
@@ -85,6 +119,7 @@ void trap_start(struct context *a0) {
       case ILLEGAL_INSTRUCTION:
         log_info("tval = 0x%lx", tval);
         log_info("sepc = 0x%lx", sepc);
+        dump_context(a0);
         panic("ILLEGAL_INSTRUCTION");
         break;
       case SYSCALL_FROM_U_MODE:
@@ -96,6 +131,7 @@ void trap_start(struct context *a0) {
         log_info("exception: %s", exception_code_description[code]);
         log_info("tval = 0x%lx", tval);
         log_info("sepc = 0x%lx", sepc);
+        dump_context(a0);
         panic("UNEXPECTED EXCEPTION");
     }
     sepc_set(sepc + 4);

@@ -9,7 +9,6 @@ void init_lock(struct spinlock* s) { s->locked = 0; }
 // Interrupts must be off.
 int holding(struct spinlock* s) { return s->locked; }
 
-// TODO:
 // Acquire the spinlock
 // Must be used with release()
 void acquire(struct spinlock* s) {
@@ -21,7 +20,6 @@ void acquire(struct spinlock* s) {
   __sync_synchronize();
 }
 
-// TODO:
 // Release the spinlock
 // Must be used with acquire()
 void release(struct spinlock* s) {
