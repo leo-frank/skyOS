@@ -7,11 +7,11 @@
 extern struct task_struct *current_task;
 
 int sys_write(uint64 fd, char *buf, uint64 len) {
-  char c;
+  char internal_buffer[256];
   if (fd == 0) {
     sstatus_set(sstatus_get() | SSTATUS_SUM);
-    memcpy(&c, buf, 1);
-    printf("%c", c);
+    memcpy(internal_buffer, buf, len);
+    printf("%s", internal_buffer);
     sstatus_set(sstatus_get() & ~SSTATUS_SUM);
   }
   return 1;

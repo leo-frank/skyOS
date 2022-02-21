@@ -36,8 +36,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "strings.h"
 #include "syscall.h"
-
 // define this globally (e.g. gcc -DPRINTF_INCLUDE_CONFIG_H ...) to include the
 // printf_config.h header file
 // default: undefined
@@ -118,9 +118,19 @@
 #endif
 
 /* self define */
+static char buffer[1024];
+static unsigned ccount = 0;
+// This is a simple printf with buffer,
+// but dosen't give care to multi-thread and exception handle
 void _putchar(char ch) {
-  // write(fd, &buffer, len)
-  write(0, &ch, 1);
+  buffer[ccount] = ch;
+  ccount++;
+  if (ch == '\n') {
+    write(0, buffer, ccount);
+    buffer[ccount] = '\0';
+    memset(buffer, 0, ccount);
+    ccount = 0;
+  }
 }
 
 // output function type
