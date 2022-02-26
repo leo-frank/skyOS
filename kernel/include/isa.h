@@ -16,9 +16,11 @@
 #define SIP_SSIP \
   SIE_STIE  // interrupt-enable bit for supervisor-level software interrupts
 
-#define SSTATUS_SIE (1L << 1)  // Supervisor Interrupt Enable
-#define SSTATUS_SPP (1L << 8)
-#define SSTATUS_SUM (1L << 18)
+enum sstatus_bits_enum {
+  SSTATUS_SIE = (1L << 1),  // Supervisor Interrupt Enable
+  SSTATUS_SPP = (1L << 8),
+  SSTATUS_SUM = (1L << 18),
+};
 
 uint64 sie_get();
 void sie_set(uint64 v);

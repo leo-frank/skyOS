@@ -4,8 +4,10 @@
 #include "list.h"
 #include "type.h"
 
-#define PG_HEAD 1
-#define PG_TAIL 2
+enum buddy_page_flags_enum {
+  PG_HEAD = 1,
+  PG_TAIL = 2,
+};
 
 struct Page {
   uint order;                  // one page

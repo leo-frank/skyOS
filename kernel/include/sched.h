@@ -5,12 +5,12 @@
 #include "vms.h"
 #define NR_TASK 64
 
-// task state info
-#define TASK_RUNNING \
-  0  // running in userspace, running in kernel, waiting for running
-#define TASK_SLEEPING 1  // sleeping for resource
-#define TASK_STOPPED 2   // when receive SIGSTOP, temporary stopped
-#define TASK_ZOMBIE 4
+enum task_states_enum {
+  TASK_RUNNING = 0,   // running in userspace or in kernel & waiting for running
+  TASK_SLEEPING = 1,  // sleeping for resource
+  TASK_STOPPED = 2,   // when receive SIGSTOP, temporary stopped
+  TASK_ZOMBIE = 4,
+};
 
 #define KSTACKSIZE (1 << 12)
 
