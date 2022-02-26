@@ -3,7 +3,7 @@
 _entry:
     add t0, a0, 1
     slli t0, t0, 14
-    la sp, boot_stack
+    la sp, kernel_stack
     add sp, sp, t0
     call main
 
@@ -13,8 +13,7 @@ loop:
 .globl trap_entry
 .align 4
 trap_entry:
-    # sscratch holds smode trap stack address, (sscratch_stack)
-    # swap current a0 and smode trap stack address
+    # sscratch:sscratch_stack
     csrrw a0, sscratch, a0
 
     # save register infos before trap
@@ -48,14 +47,15 @@ trap_entry:
     sd t4, 224(a0)
     sd t5, 232(a0)
     sd t6, 240(a0)
+    csrr t0, sepc
+    sd t0, 248(a0)
     # specially treat a0
     csrr t0, sscratch
     sd t0, 72(a0)
 
     # set sp for kernel
-    la sp, sscratch_stack_top
+    la sp, kernel_stack_top
 
-    # call the C trap handler in trap.c
     call trap_start
 
 .globl switch_to_internal
@@ -69,7 +69,10 @@ switch_to_internal:
 trap_return:
 
     ld t0, 72(a0)
-    csrw sscratch, t0 
+    csrw sscratch, t0
+
+    ld t0, 248(a0)
+    csrw sepc, t0
 
     ld ra, 0(a0)
     ld sp, 8(a0)
@@ -106,15 +109,16 @@ trap_return:
     csrrw a0, sscratch, a0
     sret
 
-    .section .bss.stack
-    .align 12
-    .globl boot_stack
-boot_stack:
+.section .bss.stack
+.align 12
+.globl kernel_stack
+kernel_stack:
     .space 4096 * 4 * 2
-    .globl boot_stack_top
-boot_stack_top:
-    .globl sscratch_stack
+.globl kernel_stack_top
+kernel_stack_top:
+
+# sscratch_stack is used for save regs when traps into kernel
+# of course, sizeof context regs will not more than 4096 bytes
+.globl sscratch_stack
 sscratch_stack:
     .space 4096
-    .globl sscratch_stack_top
-sscratch_stack_top:

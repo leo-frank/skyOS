@@ -10,6 +10,7 @@
 void trap_entry();
 
 extern char sscratch_stack[];
+extern struct task_struct *current_task;
 
 void trap_init() {
   // stack that reserve trap context
@@ -50,13 +51,12 @@ char *exception_code_description[] = {"Instruction address misaligned",
                                       "Reserved",
                                       "Store/AMO page fault"};
 
-extern void do_timer(struct context *a0);
+extern void do_timer();
 extern void trap_return(struct context *a0);
+extern void syscall();
 
 // typedef int (*fn_ptr)();
 // fn_ptr sys_call_table[] = [sys_write];
-
-extern void syscall(struct context *t);
 
 void dump_context(struct context *context) {
   printf("a0: %p\t", context->a0);
@@ -90,52 +90,42 @@ void dump_context(struct context *context) {
   printf("sp: %p\t", context->sp);
   printf("gp: %p\n", context->gp);
   printf("tp: %p\t", context->tp);
-  // printf("epc: %p\n", context->epc);
+  printf("epc: %p\n", context->sepc);
 }
-void trap_start(struct context *a0) {
-  uint64 tval = stval_get();
-  uint64 sepc = sepc_get();
-  uint64 cause = scause_get();
-  int is_int = (cause & (1l << 63l)) ? 1 : 0;
-  int code = cause & 0xff;  // exception code bits 4-0 must be implemented
-  if (code >= 16) {
-    panic("unexpected trap code");
-    return;
-  }
-  if (is_int) {
-    log_debug("interrupt: %s", interrupt_code_description[code]);
-    switch (code) {
-      case S_TIMER_INT:
-        log_debug("tval = 0x%lx", tval);
-        log_debug("sepc = 0x%lx", sepc);
-        do_timer(a0);
-        break;
-      default:
-        break;
-    }
+
+void handle_interrupt(uint64 code) {
+  if (code == S_TIMER_INT) {
+    do_timer();
   } else {
-    log_debug("exception: %s", exception_code_description[code]);
-    switch (code) {
-      case ILLEGAL_INSTRUCTION:
-        log_info("tval = 0x%lx", tval);
-        log_info("sepc = 0x%lx", sepc);
-        dump_context(a0);
-        panic("ILLEGAL_INSTRUCTION");
-        break;
-      case SYSCALL_FROM_U_MODE:
-        log_debug("tval = 0x%lx", tval);
-        log_debug("sepc = 0x%lx", sepc);
-        syscall(a0);
-        break;
-      default:
-        log_info("exception: %s", exception_code_description[code]);
-        log_info("tval = 0x%lx", tval);
-        log_info("sepc = 0x%lx", sepc);
-        dump_context(a0);
-        panic("UNEXPECTED EXCEPTION");
-    }
-    sepc_set(sepc + 4);
+    panic("unexpected interrupt code: %s", interrupt_code_description[code]);
   }
-  trap_return(a0);
-  return;
+}
+
+void handle_exception(uint64 code) {
+  if (code == SYSCALL_FROM_U_MODE) {
+    syscall();
+  } else {
+    dump_context(&(current_task->context));
+    panic("unexpected exception code: %s", exception_code_description[code]);
+  }
+}
+
+void trap_start(struct context *sscratch_stack_ptr) {
+  uint64 scause, code, inter;
+  scause = scause_get();
+  code = scause & 0xff;
+  inter = (scause & (1l << 63l)) ? 1 : 0;
+  if (inter) {
+    memcpy(&(current_task->context), sscratch_stack_ptr,
+           sizeof(struct context));
+    handle_interrupt(code);
+    log_error("should never go here");
+  } else {
+    memcpy(&(current_task->context), sscratch_stack_ptr,
+           sizeof(struct context));
+    handle_exception(code);
+    (current_task->context).sepc += 4;
+    memcpy(sscratch_stack, &(current_task->context), sizeof(struct context));
+    trap_return((struct context *)sscratch_stack);
+  }
 }

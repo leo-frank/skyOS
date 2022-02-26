@@ -23,6 +23,7 @@ extern pg_table k_pgtable;
 extern void sreturn();
 extern void flush_tlb();
 extern void end();
+extern void trap_return(struct context *a0);
 
 // allocate user pagetable
 pg_table alloc_pgtable() {
@@ -37,56 +38,28 @@ pg_table alloc_pgtable() {
   log_debug("flush_tlb addr:%lx", flush_tlb);
   return t;
 }
-
-// until now, this is a simple test userspace handler
-// void move_to_user_mode() {
-//   char *idle;
-//   pg_table user_pgt;
-
-//   // set status.spp = 0, then return to user mode
-//   sstatus_set(sstatus_get() & ~SSTATUS_SPP);
-//   // set sepc = 0, then return to userspace addr 0
-//   sepc_set((uint64)0);
-
-//   user_pgt = alloc_pgtable();
-
-//   // primary idle userspace process, do while()
-//   idle = kalloc(PGSIZE);
-//   idle[0] = 0x01, idle[1] = 0xa0;
-//   // map: [0, PGSIZE] -> [idle, idle + PGSIZE]
-//   umap(user_pgt, (uint64)0, (uint64)idle, PGSIZE);
-
-//   // set satp.PPN with userspace pagetable
-//   satp_set((SV39_ADDRESSING_MODE << 60) + ((uint64)(user_pgt) >> 12));
-
-//   // FIXME: flush_tlb();
-
-//   sreturn();
-// }
-
-void do_timer(struct context *a0) {
+extern char sscratch_stack[];
+void do_timer() {
   uint64 status = sstatus_get();
   char status_spp = (status & SSTATUS_SPP) >> 8;
   if (status_spp == 0) {
-    // trap originated from user mode
-    log_debug("timer interrupt: trap originated from user mode");
+    log_debug("timer interrupt originated from u-mode");
   } else if (status_spp == 1) {
-    // trap originated from supervisor mode
-    log_debug("timer interrupt: trap originated from supervisor mode");
-  } else {
-    panic("unexpected status.spp");
+    log_debug("timer interrupt originated from s-mode");
   }
   jiffies++;
   current_task->counter--;
   // show_process_virtual_mem_map(current_task);
   sbi_set_timer(mtime_get() + TIMER_CLK_RATE);
-  if (status_spp == 0) {
-    // we only switch if timer interrupt from u-mode
-    // save context
-    memcpy(&(current_task->context), a0, sizeof(current_task->context));
-    // then schedule
-    schedule();
-  }
+  memcpy(sscratch_stack, &(current_task->context), sizeof(struct context));
+  trap_return((struct context *)sscratch_stack);
+  // if (status_spp == 0) {
+  //   // we only switch if timer interrupt from u-mode
+  //   // save context
+  //   memcpy(&(current_task->context), a0, sizeof(current_task->context));
+  //   // then schedule
+  //   schedule();
+  // }
 }
 
 extern FatVol vol;
@@ -135,19 +108,17 @@ struct task_struct *alloc_process() {
   (p->context).sp = SV39_USER_SP_ADDR;
   return p;
 }
-extern void trap_return(struct context *a0);
 
 // switch to another process's userspace, including the pagetable
 void switch_to(struct task_struct *next) {
   // set status.spp = 0, then return to user mode
   sstatus_set(sstatus_get() & ~SSTATUS_SPP);
-  // set sepc
-  sepc_set(next->context.ra);
   // set satp.PPN with userspace pagetable
   satp_set((SV39_ADDRESSING_MODE << 60) + ((uint64)(next->pgtable) >> 12));
   // sfence.vma
   flush_tlb();
-  trap_return(&(next->context));
+  memcpy(sscratch_stack, &(current_task->context), sizeof(struct context));
+  trap_return((struct context *)sscratch_stack);
 }
 
 void schedule() {
@@ -255,7 +226,7 @@ void execve(char *filename) {
   umap(p, (p->context).sp - 4 * PGSIZE, stack - 4 * PGSIZE, PGSIZE * 4);
 
   /* set process context for later switch */
-  p->context.ra = (uint64)(header->entry) + SEPC_OFFSET;
+  p->context.sepc = (uint64)(header->entry) + SEPC_OFFSET;
 
   current_task = p;
 

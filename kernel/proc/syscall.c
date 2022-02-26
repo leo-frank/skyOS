@@ -11,6 +11,7 @@ int sys_write(uint64 fd, char *buf, uint64 len) {
   if (fd == 0) {
     sstatus_set(sstatus_get() | SSTATUS_SUM);
     memcpy(internal_buffer, buf, len);
+    internal_buffer[len] = '\0';
     printf("%s", internal_buffer);
     sstatus_set(sstatus_get() & ~SSTATUS_SUM);
   }
@@ -27,17 +28,19 @@ struct task_struct *sys_fork() {
   (p->context).a0 = 0;
   (current_task->context).a0 = p->pid;
   copy_mem_from(p, current_task);
+  show_process_virtual_mem_map(p);
   return p;
 }
 
 void sys_getpid(struct context *t) { t->a0 = current_task->pid; }
 
-void syscall(struct context *t) {
-  // ld	a3,-128(s0)
-  // 切換棧指針
-  uint64 syscall_num;
+char *syscall_names[] = {[8] "getpid", [32] "fork", [64] "write"};
 
+void syscall() {
+  uint64 syscall_num;
+  struct context *t = &(current_task->context);
   syscall_num = t->a7;
+  log_debug("syscall: %s", syscall_names[syscall_num]);
   if (syscall_num == 64) {
     uint64 fd = t->a0;
     char *buf = (char *)(t->a1);

@@ -48,6 +48,7 @@ struct context {
   /* 224 */ uint64 t4;
   /* 232 */ uint64 t5;
   /* 240 */ uint64 t6;
+  /* 248 */ uint64 sepc;
 };
 
 #define MAX_VMA_NUM 5
