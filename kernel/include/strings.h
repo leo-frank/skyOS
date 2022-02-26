@@ -1,6 +1,8 @@
-#pragma once
+#ifndef STRING_FUNCTION_H
+#define STRING_FUNCTION_H
 
 #include "type.h"
+
 void *memset(void *dst, int c, uint n);
 void *memcpy(void *dst, void *src, uint n);
 void strcpy(char *dest, const char *src);
@@ -12,3 +14,5 @@ char *strrchr(const char *s, int c);
 int tolower(int c);
 int toupper(int c);
 int memcmp(const void *s1, const void *s2, size_t n);
+
+#endif /* STRING_FUNCTION_H */

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCHEDULE_H
+#define SCHEDULE_H
 
 #include "type.h"
 #include "vms.h"
@@ -88,3 +89,6 @@ void umap(struct task_struct *pg, uint64 va, uint64 pa, uint64 size);
 struct task_struct *alloc_process();
 void copy_mem_from(struct task_struct *p, struct task_struct *current);
 uint64 schedule();
+void do_timer();
+
+#endif /* SCHEDULE_H */

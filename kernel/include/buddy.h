@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BUDDY_H
+#define BUDDY_H
 
 #include "list.h"
 #include "type.h"
@@ -20,3 +21,5 @@ void buddy_free_page(struct Page* p);
 uint64 buddy_statistics();
 void buddy_test1();
 void buddy_test2();
+
+#endif /* BUDDY_H */

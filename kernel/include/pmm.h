@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PHYSICAL_MEMORY_MANAGER_H
+#define PHYSICAL_MEMORY_MANAGER_H
 
 #include "buddy.h"
 #include "type.h"
@@ -18,3 +19,5 @@ void page_init();
 void* kalloc(uint64 size);
 void kfree(struct Page* p);
 void pmm_test();
+
+#endif /* PHYSICAL_MEMORY_MANAGER_H */

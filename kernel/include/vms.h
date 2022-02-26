@@ -1,4 +1,6 @@
-#pragma once
+#ifndef VIRTUAL_MEMORY_SYSTEM_H
+#define VIRTUAL_MEMORY_SYSTEM_H
+
 #include "type.h"
 // Sv39 page tables contain 2 9 page table entries(PTEs), eight bytes each.
 typedef uint64 pte;
@@ -37,7 +39,8 @@ typedef pte* pg_table;
 #define PGROUNDDOWN(a) (((a)) & ~(PGSIZE - 1))
 
 #define OFFSET(addr) (addr & (PGSIZE - 1))
-void flush_tlb();
 void vms_init();
 pte* trans(pg_table pg, uint64 va);
 void map(pg_table pg, uint64 va, uint64 pa, uint64 size, uint perm);
+
+#endif /* VIRTUAL_MEMORY_SYSTEM_H */

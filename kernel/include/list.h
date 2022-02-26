@@ -1,4 +1,5 @@
-#pragma once
+#ifndef DOUBLE_LINKED_LIST_H
+#define DOUBLE_LINKED_LIST_H
 
 #include "type.h"
 
@@ -71,3 +72,5 @@ static inline uint list_empty(struct list_head *head) {
 #define for_each_in_list_safe(elem, tmp, field, head) \
         __for_each_in_list_safe(elem, tmp, typeof (*elem), field, head)
 */
+
+#endif /* DOUBLE_LINKED_LIST_H */

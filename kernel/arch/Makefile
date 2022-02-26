@@ -33,9 +33,9 @@ CFLAGS      	= 											  \
 # ------------------------------------------------------------------------------
 # Source & Object files
 # ------------------------------------------------------------------------------
-SRC = entry.S sret.S
-OBJ = $(SRC:.S=.o)
-DFILES = $(SRC:.S=.d)
+SRC = entry.S sret.S isa.c
+OBJ = $(SRC:.S=.o) $(SRC:.c=.o)
+DFILES = $(SRC:.S=.d) $(SRC:.c=.d)
 
 # ------------------------------------------------------------------------------
 # Rules
@@ -43,6 +43,10 @@ DFILES = $(SRC:.S=.d)
 objs: $(OBJ)
 
 %.o : %.S
+	@$(ECHO) +++ compile: $<
+	@$(CC) $(CFLAGS) $< -o $(BUILD)/$(basename $<).o
+
+%.o : %.c
 	@$(ECHO) +++ compile: $<
 	@$(CC) $(CFLAGS) $< -o $(BUILD)/$(basename $<).o
 

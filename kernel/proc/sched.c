@@ -20,11 +20,6 @@ struct task_struct *current_task;
 int pidmap[NR_TASK];
 
 extern pg_table k_pgtable;
-extern void sreturn();
-extern void flush_tlb();
-extern void end();
-extern void trap_return(struct context *a0);
-void trap_return_2();
 
 // allocate user pagetable
 pg_table alloc_pgtable() {
@@ -39,9 +34,6 @@ pg_table alloc_pgtable() {
   log_debug("flush_tlb addr:%lx", flush_tlb);
   return t;
 }
-extern char sscratch_stack[];
-
-extern FatVol vol;
 
 uint32 alloc_pid() {
   for (uint32 i = 0; i < NR_TASK; i++) {
@@ -166,6 +158,8 @@ void copy_mem_from(struct task_struct *p, struct task_struct *current) {
   }
   sstatus_set(sstatus_get() & ~SSTATUS_SUM);
 }
+
+extern FatVol vol;
 
 void execve(char *filename) {
   FatFile file;

@@ -5,12 +5,16 @@
 #include "sbi.h"
 #include "sched.h"
 #include "strings.h"
+#include "syscall_define.h"
+#include "trap.h"
 #include "type.h"
-// define in entry.S
-void trap_entry();
-void trap_return_2();
+
 extern char sscratch_stack[];
 extern struct task_struct *current_task;
+
+// define in entry.S
+extern void trap_entry();
+extern void trap_return(struct context *a0);
 
 void trap_init() {
   // stack that reserve trap context
@@ -24,39 +28,31 @@ void trap_init() {
   sbi_set_timer(mtime_get() + TIMER_CLK_RATE);
 }
 
-char *interrupt_code_description[] = {
-    "Reserved", "Supervisor software interrupt",
-    "Reserved", "Machine software interrupt",
-    "Reserved", "Supervisor timer interrupt",
-    "Reserved", "Machine timer interrupt",
-    "Reserved", "Supervisor external interrupt",
-    "Reserved", "Machine external interrupt",
-    "Reserved", "Reserved",
-    "Reserved", "Reserved"};
+static char *inter_infos[] = {"Reserved", "Supervisor software interrupt",
+                              "Reserved", "Machine software interrupt",
+                              "Reserved", "Supervisor timer interrupt",
+                              "Reserved", "Machine timer interrupt",
+                              "Reserved", "Supervisor external interrupt",
+                              "Reserved", "Machine external interrupt",
+                              "Reserved", "Reserved",
+                              "Reserved", "Reserved"};
 
-char *exception_code_description[] = {"Instruction address misaligned",
-                                      "Instruction access fault",
-                                      "Illegal instruction",
-                                      "Breakpoint",
-                                      "Load address misaligned",
-                                      "Load access fault",
-                                      "Store/AMO address misaligned",
-                                      "Store/AMO access fault",
-                                      "Environment call from U-mode",
-                                      "Environment call from S-mode",
-                                      "Reserved",
-                                      "Environment call from M-mode",
-                                      "Instruction page fault",
-                                      "Load page fault",
-                                      "Reserved",
-                                      "Store/AMO page fault"};
-
-extern void do_timer();
-extern void trap_return(struct context *a0);
-extern void syscall();
-
-// typedef int (*fn_ptr)();
-// fn_ptr sys_call_table[] = [sys_write];
+static char *exception_infos[] = {"Instruction address misaligned",
+                                  "Instruction access fault",
+                                  "Illegal instruction",
+                                  "Breakpoint",
+                                  "Load address misaligned",
+                                  "Load access fault",
+                                  "Store/AMO address misaligned",
+                                  "Store/AMO access fault",
+                                  "Environment call from U-mode",
+                                  "Environment call from S-mode",
+                                  "Reserved",
+                                  "Environment call from M-mode",
+                                  "Instruction page fault",
+                                  "Load page fault",
+                                  "Reserved",
+                                  "Store/AMO page fault"};
 
 void dump_context(struct context *context) {
   printf("a0: %p\t", context->a0);
@@ -93,20 +89,20 @@ void dump_context(struct context *context) {
   printf("epc: %p\n", context->sepc);
 }
 
-void handle_interrupt(uint64 code) {
+static void handle_interrupt(uint64 const code) {
   if (code == S_TIMER_INT) {
     do_timer();
   } else {
-    panic("unexpected interrupt code: %s", interrupt_code_description[code]);
+    panic("unexpected interrupt code: %s", inter_infos[code]);
   }
 }
 
-void handle_exception(uint64 code) {
+static void handle_exception(uint64 const code) {
   if (code == SYSCALL_FROM_U_MODE) {
     syscall();
   } else {
     dump_context(&(current_task->context));
-    panic("unexpected exception code: %s", exception_code_description[code]);
+    panic("unexpected exception code: %s", exception_infos[code]);
   }
 }
 
@@ -131,6 +127,7 @@ void trap_start(struct context *sscratch_stack_ptr) {
   }
 }
 
+// wrapper of trap_return
 void trap_return_2() {
   memcpy(sscratch_stack, &(current_task->context), sizeof(struct context));
   trap_return((struct context *)sscratch_stack);

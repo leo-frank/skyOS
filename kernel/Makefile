@@ -79,6 +79,7 @@ MAIN = main.o
 
 KOBJS			=										\
 					entry.o 						\
+					isa.o 							\
 					sret.o							\
 					logo.o 							\
 					main.o 							\

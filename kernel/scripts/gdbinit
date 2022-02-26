@@ -1,3 +1,2 @@
 set disassemble-next-line on
 target remote : 1235
-b fat_readdir

@@ -16,7 +16,7 @@
 
 - [x] buddy memory allocator
 
-- [ ] fix bug in process schedule & interrupt
+- [x] stable process schedule & interrupt
 
 - [ ] SMP support
 

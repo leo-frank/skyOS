@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LOCK_H
+#define LOCK_H
 
 #include "type.h"
 
@@ -15,3 +16,5 @@ void acquire(struct spinlock *);
 // Release the spinlock
 // Must be used with acquire()
 void release(struct spinlock *);
+
+#endif /* LOCK_H */

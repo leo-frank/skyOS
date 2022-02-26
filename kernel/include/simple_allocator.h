@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SIMPLE_ALLOCATOR_H
+#define SIMPLE_ALLOCATOR_H
 
 #include "lock.h"
 
@@ -12,3 +13,5 @@ void simple_allocator_init();
 struct Page *simple_allocate();
 void simple_free(struct Page *p);
 void simple_test();
+
+#endif /* SIMPLE_ALLOCATOR_H */
