@@ -63,5 +63,3 @@ kernel/build/
 # mnt dir of image files
 kernel/mnt
 
-# user
-user/

@@ -40,27 +40,6 @@ pg_table alloc_pgtable() {
   return t;
 }
 extern char sscratch_stack[];
-void do_timer() {
-  uint64 status = sstatus_get();
-  char status_spp = (status & SSTATUS_SPP) >> 8;
-  if (status_spp == 0) {
-    log_debug("timer interrupt originated from u-mode");
-  } else if (status_spp == 1) {
-    log_debug("timer interrupt originated from s-mode");
-  }
-  jiffies++;
-  current_task->counter--;
-  // show_process_virtual_mem_map(current_task);
-  sbi_set_timer(mtime_get() + TIMER_CLK_RATE);
-  trap_return_2();
-  // if (status_spp == 0) {
-  //   // we only switch if timer interrupt from u-mode
-  //   // save context
-  //   memcpy(&(current_task->context), a0, sizeof(current_task->context));
-  //   // then schedule
-  //   schedule();
-  // }
-}
 
 extern FatVol vol;
 
@@ -109,18 +88,21 @@ struct task_struct *alloc_process() {
   return p;
 }
 
-// switch to another process's userspace, including the pagetable
-void switch_to(struct task_struct *next) {
+// switch to current process's userspace, including the pagetable
+void switch_to() {
   // set status.spp = 0, then return to user mode
   sstatus_set(sstatus_get() & ~SSTATUS_SPP);
   // set satp.PPN with userspace pagetable
-  satp_set((SV39_ADDRESSING_MODE << 60) + ((uint64)(next->pgtable) >> 12));
+  satp_set((SV39_ADDRESSING_MODE << 60) +
+           ((uint64)(current_task->pgtable) >> 12));
   // sfence.vma
   flush_tlb();
   trap_return_2();
 }
 
-void schedule() {
+// only focus on find next RUNNING process, takes no respon for switch
+// return 1 if we find next process
+uint64 schedule() {
   uint i;
   // default next task is current_task, that means no task switch happens.
   struct task_struct *p, *next = current_task;
@@ -133,11 +115,40 @@ void schedule() {
       break;
     }
   }
-  if (next) {
+  if (next != current_task) {
     current_task = next;
-    switch_to(next);
+    return 1;
+  } else {
+    return 0;
   }
-  return;
+}
+
+void do_timer() {
+  uint64 status = sstatus_get();
+  char status_spp = (status & SSTATUS_SPP) >> 8;
+  if (status_spp == 0) {
+    log_debug("timer interrupt originated from u-mode");
+  } else if (status_spp == 1) {
+    log_debug("timer interrupt originated from s-mode");
+  }
+  jiffies++;
+  current_task->counter--;
+  // show_process_virtual_mem_map(current_task);
+  sbi_set_timer(mtime_get() + TIMER_CLK_RATE);
+  if (status_spp == 0) {
+    // then schedule
+    if (schedule() == 1) {
+      log_info("next process id: %ld", current_task->pid);
+      switch_to();
+    } else {
+      log_info("still current process: %ld", current_task->pid);
+      goto just_return;
+    }
+  } else {
+    // if timer-inter from s-mode, just return
+  just_return:
+    trap_return_2();
+  }
 }
 
 // copy current's physical memory and map on p

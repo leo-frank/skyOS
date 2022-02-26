@@ -87,4 +87,4 @@ void kmap(pg_table pg, uint64 va, uint64 pa, uint64 size);
 void umap(struct task_struct *pg, uint64 va, uint64 pa, uint64 size);
 struct task_struct *alloc_process();
 void copy_mem_from(struct task_struct *p, struct task_struct *current);
-void schedule();
+uint64 schedule();

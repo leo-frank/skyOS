@@ -123,8 +123,10 @@ void trap_start(struct context *sscratch_stack_ptr) {
   } else {
     memcpy(&(current_task->context), sscratch_stack_ptr,
            sizeof(struct context));
+    // since fork may be invoked, which results in endless fork,
+    // so add sepc before handle_exception
+    (current_task->context).sepc += 4;  // must before handle_exception
     handle_exception(code);
-    (current_task->context).sepc += 4;
     trap_return_2();
   }
 }
