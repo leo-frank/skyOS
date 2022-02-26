@@ -200,7 +200,7 @@ void execve(char *filename) {
     char *tmp = kalloc(ph->memsz);
     if (!align(tmp)) panic("...");
 
-    memcpy(tmp, (char *)elfcontent + ph->off, ph->memsz);
+    memcpy(tmp, (char *)elfcontent + ph->off, ph->filesz);
     umap(p, ph->vaddr, (uint64)(tmp), ph->memsz);
     if (ph->vaddr <= header->entry && header->entry < ph->vaddr + ph->memsz) {
       // should be 0
