@@ -24,6 +24,7 @@ extern void sreturn();
 extern void flush_tlb();
 extern void end();
 extern void trap_return(struct context *a0);
+void trap_return_2();
 
 // allocate user pagetable
 pg_table alloc_pgtable() {
@@ -51,8 +52,7 @@ void do_timer() {
   current_task->counter--;
   // show_process_virtual_mem_map(current_task);
   sbi_set_timer(mtime_get() + TIMER_CLK_RATE);
-  memcpy(sscratch_stack, &(current_task->context), sizeof(struct context));
-  trap_return((struct context *)sscratch_stack);
+  trap_return_2();
   // if (status_spp == 0) {
   //   // we only switch if timer interrupt from u-mode
   //   // save context
@@ -117,8 +117,7 @@ void switch_to(struct task_struct *next) {
   satp_set((SV39_ADDRESSING_MODE << 60) + ((uint64)(next->pgtable) >> 12));
   // sfence.vma
   flush_tlb();
-  memcpy(sscratch_stack, &(current_task->context), sizeof(struct context));
-  trap_return((struct context *)sscratch_stack);
+  trap_return_2();
 }
 
 void schedule() {

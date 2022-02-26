@@ -8,7 +8,7 @@
 #include "type.h"
 // define in entry.S
 void trap_entry();
-
+void trap_return_2();
 extern char sscratch_stack[];
 extern struct task_struct *current_task;
 
@@ -125,7 +125,11 @@ void trap_start(struct context *sscratch_stack_ptr) {
            sizeof(struct context));
     handle_exception(code);
     (current_task->context).sepc += 4;
-    memcpy(sscratch_stack, &(current_task->context), sizeof(struct context));
-    trap_return((struct context *)sscratch_stack);
+    trap_return_2();
   }
+}
+
+void trap_return_2() {
+  memcpy(sscratch_stack, &(current_task->context), sizeof(struct context));
+  trap_return((struct context *)sscratch_stack);
 }
