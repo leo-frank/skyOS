@@ -115,10 +115,6 @@ fat12.img:
 	dd if=/dev/zero of=$@ bs=512 count=2048
 	mkfs -t msdos $@
 
-fat12.img:
-	dd if=/dev/zero of=$@ bs=512 count=20480
-	mkfs -t msdos $@
-
 fat32.img:
 	dd if=/dev/zero of=$@ bs=512 count=81920
 	mkfs -t msdos -F 32 $@
